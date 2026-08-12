@@ -1,0 +1,379 @@
+---
+title: "Roll your own AVD on HCI deployment – Part 3: The Deployment"
+date: 2024-03-29T17:33:15+00:00
+categories: [gbbcore]
+tags: [work, lab]
+description: "Lee Cox – Advanced Migration GBB Welcome to Part 3 of this series of Rolling your own Azure Stack HCI environment! Congrats and thanks for sticking with me. Today is the day! We’re finally here. Now we get to load some c"
+original_url: https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/
+---
+{% raw %}
+
+<p class="wp-block-paragraph">Lee Cox &#8211; Advanced Migration GBB</p>
+
+
+
+<p class="wp-block-paragraph">Welcome to Part 3 of this series of Rolling your own Azure Stack HCI environment! Congrats and thanks for sticking with me. Today is the day! We&#8217;re finally here. Now we get to load some code and make this HCI &#8220;thing&#8221; happen.</p>
+
+
+
+<p class="wp-block-paragraph">Let&#8217;s review what you should have done at this point.</p>
+
+
+
+<ol class="wp-block-list">
+<li>We&#8217;ve prepped the hardware with the latest firmware.</li>
+
+
+
+<li>We&#8217;ve collected and injected drivers into the 23H2 HCI build.</li>
+
+
+
+<li>We&#8217;ve created/prepped the on-prem and cloud identity space, rights assignments, and users.</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">That&#8217;s a lot, it isn&#8217;t a trivial amount of work and lays the foundation for a straightforward installation process. Well, as straightforward as it can be using unapproved hardware for a Dev/Test solution environment. 🙂</p>
+
+
+
+<p class="wp-block-paragraph">The steps here are the same-ish as what you did to install Windows Server 2022.</p>
+
+
+
+<ol class="wp-block-list">
+<li>Power off the systems</li>
+
+
+
+<li>Insert your USB Key with HCI on it into the USB port</li>
+
+
+
+<li>Power on the system and one time boot to the USB key</li>
+
+
+
+<li>Tell the setup process to install the HCI image</li>
+
+
+
+<li>Selecting &#8220;Custom&#8221; install process so we can clean the drives</li>
+
+
+
+<li>Delete all the existing partitions on the OS drive and select &#8220;New&#8221;</li>
+
+
+
+<li>Continue the install process</li>
+
+
+
+<li>Wait…</li>
+
+
+
+<li>Wait Some more</li>
+
+
+
+<li>Set a local Administrator password across the systems &#8211; (Be mindful of Complexity Requirements)</li>
+
+
+
+<li>Then boot into Sconfig for a few more changes</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">You&#8217;ll be greeted by this lovely screen when you drop into the &#8220;Desktop&#8221; on the HCI server:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="535" data-attachment-id="1661" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-1-2-3/" data-orig-file="/assets/archive/gbbcore/983b42c5-image-1-2.jpg" data-orig-size="4190,2192" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1-2" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/983b42c5-image-1-2.jpg" src="/assets/archive/gbbcore/983b42c5-image-1-2.jpg" alt="" class="wp-image-1661" /></figure>
+
+
+
+<ul class="wp-block-list">
+<li>When we get here, go into 2 and set the proper node name. When it asks to reboot, say no.</li>
+
+
+
+<li>Then go into 8 and verify you have IP information if you&#8217;re running DHCP (which you should have a scope for on your network). Set the <strong>Static IP</strong> and DNS Server of your <strong>Domain Controller</strong> here.</li>
+
+
+
+<li>Go into 9 and verify a time source. It should match your domain controller.</li>
+
+
+
+<li>I then do other housekeeping for the systems:
+<ul class="wp-block-list">
+<li>Enable RDP</li>
+
+
+
+<li>Enable Required Telemetry</li>
+
+
+
+<li>Then go into 6 and Install All Quality Updates</li>
+</ul>
+</li>
+
+
+
+<li>Once the updates are done, you&#8217;ll reboot and rerun the updates. There may be driver updates in here too.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">When the system stops installing updates and requiring a reboot, you have a few options here based on what you know of your hardware. You can select 15 and drop into the command line, navigate to your driver folder on the USB key and load any additional software or drivers that didn&#8217;t slipstream. If you&#8217;re not sure, you can load up a Windows Admin Center instance and import the servers with the Administrator user account on the system, then go into Devices to see if there are any &#8220;Unknown&#8221; devices without drivers in the list. This is like going into the Device Manager on a regular Windows system. It also only takes a few minutes to setup. Then use the PowerShell interface within Windows Admin Center to load up the additional software and drivers.</p>
+
+
+
+<p class="wp-block-paragraph">On my system I needed to install the iLo Drivers and config software for the OS to correctly interface with the hardware. Other OEMs have similar requirements with Dell/EMC, Lenovo, Cisco, DataOn, Intel etc.</p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;re done with these steps, you should replay the work on any other nodes in the same order to get the same end result. You can do all this work in the OOB interface, RDP, or WAC. Whatever makes you feel comfortable.</p>
+
+
+
+<p class="wp-block-paragraph">Depending on how many interfaces you&#8217;ve connected and plan to provision, what you plan to use on the system, and what it was used for before, there are a few side quests you may need to complete.</p>
+
+
+
+<ul class="wp-block-list">
+<li>Clean Your Disks: As mentioned previously we need data disks for this to work. Mine were used in a vSAN configuration and I needed to clean them to use with S2D. You&#8217;ll need to remove any removable media from the system first. Here is a script to run on each node:</li>
+</ul>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<pre class="wp-block-code"><code>Update-StorageProviderCache
+
+&nbsp;&nbsp;&nbsp; Get-StoragePool | ? IsPrimordial -eq $false | Set-StoragePool -IsReadOnly:$false -ErrorAction SilentlyContinue
+
+&nbsp;&nbsp;&nbsp; Get-StoragePool | ? IsPrimordial -eq $false | Get-VirtualDisk | Remove-VirtualDisk -Confirm:$false -ErrorAction SilentlyContinue
+
+&nbsp;&nbsp;&nbsp; Get-StoragePool | ? IsPrimordial -eq $false | Remove-StoragePool -Confirm:$false -ErrorAction SilentlyContinue
+
+&nbsp;&nbsp;&nbsp; Get-PhysicalDisk | Reset-PhysicalDisk -ErrorAction SilentlyContinue
+
+&nbsp;&nbsp;&nbsp; Get-Disk | ? Number -ne $null | ? IsBoot -ne $true | ? IsSystem -ne $true | ? PartitionStyle -ne RAW | % {
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $_ | Set-Disk -isoffline:$false
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $_ | Set-Disk -isreadonly:$false
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $_ | Clear-Disk -RemoveData -RemoveOEM -Confirm:$false
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $_ | Set-Disk -isreadonly:$true
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $_ | Set-Disk -isoffline:$true
+
+&nbsp;&nbsp;&nbsp; }
+
+&nbsp;&nbsp;&nbsp; Get-Disk | Where Number -Ne $Null | Where IsBoot -Ne $True | Where IsSystem -Ne $True | Where PartitionStyle -Eq RAW | Group -NoElement -Property FriendlyName</code></pre>
+</div>
+
+
+
+<ul class="wp-block-list">
+<li>Config the NICs: If you&#8217;re using more than one Interface card for your VM/Management traffic, which is pretty standard, you&#8217;ll need to disable DHCP on the other interfaces and remove the gateway. Here is some code to do that:</li>
+</ul>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<pre class="wp-block-code"><code>Set-NetIPInterface -DHCP Disabled -InterfaceAlias "Nic-Name"
+
+Remove-NetIPAddress -InterfaceAlias "Nic-Name" -Confirm:$false
+
+Remove-NetRoute -InterfaceAlias "Nic-Name" -NextHop 192.168.0.1 -Confirm:$false</code></pre>
+</div>
+
+
+
+<p class="wp-block-paragraph">You&#8217;ll need to set the interface names and &#8220;-NextHop&#8221; address to the correct ones for your interfaces/network.</p>
+
+
+
+<p class="wp-block-paragraph">After you get done here, it’s worth looking over your work and making sure you&#8217;ve got everything squared away. Before the next few steps. Everything should be up to date on HCI, drivers deployed, IP&#8217;ed, Network Interfaces properly connected/configured, Disks prepped. If you&#8217;re doing a switchless configuration, make sure your ethernet or DAC cables are connected to the same interface and port on both sides; Port 1 to Port 1, Port 2 to Port 2.</p>
+
+
+
+<p class="wp-block-paragraph">You&#8217;ll want to deploy the Server Roles for HCI and reboot:</p>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<pre class="wp-block-code"><code>Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart
+
+Restart-Computer -Force</code></pre>
+</div>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ve now got all the nodes ready to join the team and work for Azure! Woohoo! There is an onboarding script that you can use below. Replace the sample information with your own for the variables.</p>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<pre class="wp-block-code"><code>$rg="TheRGNameYouCreated"
+
+$AzureSubID = "TheAzureSubscriptionGUIDYoureUsing"
+
+$tenant="YourAADEntraIDTenantGUID"
+
+Write-Host "Installing Required Modules"
+
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+
+$ModuleNames="AzSHCI.ARCInstaller","Az.Resources","Az.Accounts","AzStackHci.EnvironmentChecker"
+
+&nbsp; &nbsp; foreach ($ModuleName in $ModuleNames){
+
+&nbsp; &nbsp; &nbsp; &nbsp; if (!(Get-InstalledModule -Name $ModuleName -ErrorAction Ignore)){
+
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Install-Module -Name $ModuleName -Force
+
+&nbsp; &nbsp; &nbsp; &nbsp; }
+
+&nbsp; &nbsp; }
+
+Connect-AzAccount -SubscriptionId $AzureSubID -TenantId $tenant
+
+$armtoken = (Get-AzAccessToken).token
+
+$id = (Get-AzContext).Account.Id
+
+Write-Output "Initializing &amp; Registering Azure Stack HCI Arc Agent on Node"
+
+Invoke-AzStackHciArcInitialization -SubscriptionID $AzureSubID -ResourceGroup $rg -TenantID $tenant -Region EastUS -Cloud "AzureCloud" -ArmAccessToken $armtoken -AccountID $id -Force</code></pre>
+
+
+
+<p class="wp-block-paragraph">You&#8217;ll be prompted to sign-in to a system that has access to a browser and provide the device code. Good to do this step through RDP to copy/paste or in WAC. You&#8217;ll see a bunch of code scroll by and the systems will be connected to Azure through the Arc agent.</p>
+</div>
+
+
+
+<p class="wp-block-paragraph">Once complete, Let&#8217;s verify the config and the hardware before finishing the local side of the config. Run:</p>
+
+
+
+<pre class="wp-block-code"><code><code>Invoke-AzStackHciHardwareValidation</code></code></pre>
+
+
+
+<p class="wp-block-paragraph">Look for any errors in the system setup and follow the information in the error to resolve the issue.</p>
+
+
+
+<p class="wp-block-paragraph">We&#8217;re now done with the nodes local configuration everything else can be done through Azure! Please note that if you purchase an Azure Stack HCI system from an OEM, all of this work is done for you. They&#8217;ll also walk you through the Azure and AD prep steps. </p>
+
+
+
+<p class="wp-block-paragraph">In the Azure Portal, search for Azure Stack HCI and select it like we did before.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="528" data-attachment-id="1663" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-2-2-3/" data-orig-file="/assets/archive/gbbcore/a0086902-image-2-2.jpg" data-orig-size="1080,557" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="image-2-2" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/a0086902-image-2-2.jpg" src="/assets/archive/gbbcore/a0086902-image-2-2.jpg" alt="" class="wp-image-1663" /></figure>
+
+
+
+<p class="wp-block-paragraph">This time we want to select &#8220;<strong>Deploy Cluster</strong>&#8221; on the HCI landing page.</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1664" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-3-2-3/" data-orig-file="/assets/archive/gbbcore/2bdcbac7-image-3-2.jpg" data-orig-size="2680,2854" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-3-2" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/2bdcbac7-image-3-2.jpg" src="/assets/archive/gbbcore/2bdcbac7-image-3-2.jpg" alt="" class="wp-image-1664" /></figure>
+
+
+
+<p class="wp-block-paragraph">Now we&#8217;ll land on the deployment wizard for Azure Stack HCI 23H2. It&#8217;s all portal driven and will then direct the Arc connected HCI nodes to complete the cluster build. You should see your Arc connected HCI nodes at the bottom. If you don&#8217;t, then they didn&#8217;t register correctly, or you tried to deploy and the need to clean up the install. </p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="869" height="1023" data-attachment-id="1665" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-4-1-2/" data-orig-file="/assets/archive/gbbcore/7c57b7c2-image-4-1.jpg" data-orig-size="2528,2978" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-4-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/7c57b7c2-image-4-1.jpg" src="/assets/archive/gbbcore/7c57b7c2-image-4-1.jpg" alt="" class="wp-image-1665" /></figure>
+
+
+
+<p class="wp-block-paragraph">In the next set of steps, you&#8217;ll set and specify a bunch of information that was outlined during the planning and identity phase of this series. Remember when I said it would be a good idea to write things down? Yeah, this is where it gets used. Ensure you have the correct nodes and the right number of nodes before continuing. All of your information you enter is critically important, but the process is also forgiving.</p>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph">Tip: If there is a circled &#8220;i&#8221; next to a field, hover over it or click it to reveal the field tip. These can either be not helpful or very helpful to make sure you enter the information correctly. I always click on them the first time through a wizard like this.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="839" height="1024" data-attachment-id="1666" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-5-1-2/" data-orig-file="/assets/archive/gbbcore/426dc30f-image-5-1.jpg" data-orig-size="2436,2974" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-5-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/426dc30f-image-5-1.jpg" src="/assets/archive/gbbcore/426dc30f-image-5-1.jpg" alt="" class="wp-image-1666" /></figure>
+
+
+
+<p class="wp-block-paragraph">You should define a new <strong>Key Vault</strong>, <strong>Storage Account</strong>, and anything else that requires new/other Azure services. You&#8217;re going to setup the <strong>Network Intents</strong> here with the interface mapping. You&#8217;ll want to set any <strong>VLAN IDs</strong> you might need for the networks like storage or VM traffic. You&#8217;ll need that block of <strong>IPs</strong> we were discussing before to deploy the clusters and configure the services we&#8217;ll run on HCI.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="947" height="1024" data-attachment-id="1667" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-6-1-2/" data-orig-file="/assets/archive/gbbcore/22c176ad-image-6-1.jpg" data-orig-size="2528,2734" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-6-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/22c176ad-image-6-1.jpg" src="/assets/archive/gbbcore/22c176ad-image-6-1.jpg" alt="" class="wp-image-1667" /></figure>
+
+
+
+<p class="wp-block-paragraph">You need the <strong>Local Admin</strong> information, the <strong>Domain Information</strong>, and the <strong>User Account </strong>you had the AD Prep tool create in the previous blog. The <strong>OU</strong> info needs to be in the same format from the AD Prep tool.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="508" data-attachment-id="1668" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-8-4/" data-orig-file="/assets/archive/gbbcore/b85565d8-image-8.jpg" data-orig-size="2670,1325" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-8" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/b85565d8-image-8.jpg" src="/assets/archive/gbbcore/b85565d8-image-8.jpg" alt="" class="wp-image-1668" /></figure>
+
+
+
+<p class="wp-block-paragraph">The final set of steps relates to <strong>security recommendations</strong> (good to accept the defaults if you can), <strong>storage config</strong> (let it create the recommended volumes if the config is typical), and <strong>tags</strong> (Tagging the environment will help with locating resources).&nbsp;</p>
+
+
+
+<p class="wp-block-paragraph">Finally, the wizard will check your work for any errors:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="1008" data-attachment-id="1669" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-7-1-2/" data-orig-file="/assets/archive/gbbcore/ab49f773-image-7-1.jpg" data-orig-size="2134,2102" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-7-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/ab49f773-image-7-1.jpg" src="/assets/archive/gbbcore/ab49f773-image-7-1.jpg" alt="" class="wp-image-1669" /></figure>
+
+
+
+<p class="wp-block-paragraph">And then click <strong>Start Validation</strong> to run checks on the systems to ensure it can deploy properly.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="850" height="1023" data-attachment-id="1670" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-9-4/" data-orig-file="/assets/archive/gbbcore/2127d70c-image-9.jpg" data-orig-size="1802,2170" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-9" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/2127d70c-image-9.jpg" src="/assets/archive/gbbcore/2127d70c-image-9.jpg" alt="" class="wp-image-1670" /></figure>
+
+
+
+<p class="wp-block-paragraph">If at this step it runs into issues it will give you &#8220;Go Do&#8217;s&#8221; to correct before continuing. If you do get an error, the system will allow you to revalidate.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, you&#8217;ll be given the option to &#8220;<strong>Review + Create</strong>&#8221; where it will start the cluster build. It will also allow you to save the ARM template of the deployment for you to replay or create a template from for future deployments.</p>
+
+
+
+<p class="wp-block-paragraph">The deployment <strong>WILL</strong> take a while. Up to 2-3 hours for a two-node cluster. So let it do its thing. You can monitor the deployment from the final step which will take you to the deployments section of the HCICluster element:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="780" data-attachment-id="1671" data-permalink="https://gbbcore.wordpress.com/2024/03/29/roll-your-own-avd-on-hci-deployment-part-3-the-deployment/image-10-4/" data-orig-file="/assets/archive/gbbcore/8f7b6ab6-image-10.jpg" data-orig-size="2646,2018" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-10" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/8f7b6ab6-image-10.jpg" src="/assets/archive/gbbcore/8f7b6ab6-image-10.jpg" alt="" class="wp-image-1671" /></figure>
+
+
+
+<p class="wp-block-paragraph">If at any point it fails, you can <strong>Rerun deployment</strong> to pick up where you left off.</p>
+
+
+
+<p class="wp-block-paragraph">This is a good place to pause for now. Get the Cluster up and running address anything that comes up like typos and any issues. I had a permission issue from not getting the rights correct on the Domain User account, entering the OU structure incorrectly, along with the User information being formatted incorrectly my first time through. It&#8217;s important to pay attention to the sample information that is provided and the field tips.</p>
+
+
+
+<p class="wp-block-paragraph">Once you clear all of those common errors, you&#8217;ll be able to move on the next set of steps to get this turned up! I want to say thanks again to <strong>Michael Godfrey</strong> for the scripting samples here. Thanks for reading!</p>
+
+{% endraw %}

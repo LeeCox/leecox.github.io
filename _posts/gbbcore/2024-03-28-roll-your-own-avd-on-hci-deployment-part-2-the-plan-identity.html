@@ -1,0 +1,263 @@
+---
+title: "Roll your own AVD on HCI deployment – Part 2: The Plan & Identity"
+date: 2024-03-28T17:10:37+00:00
+categories: [gbbcore]
+tags: [work, lab]
+description: "Lee Cox – Advanced Migration GBB Welcome back, and to Part 2 of this series. I hope that you found the first part helpful. Continuing on from the last Blog post you should have a few things sorted out now to begin our ne"
+original_url: https://gbbcore.wordpress.com/2024/03/28/roll-your-own-avd-on-hci-deployment-part-2-the-plan-identity/
+---
+{% raw %}
+
+<p class="wp-block-paragraph">Lee Cox &#8211; Advanced Migration GBB</p>
+
+
+
+<p class="wp-block-paragraph">Welcome back, and to Part 2 of this series. I hope that you found the first part helpful. Continuing on from the last Blog post you should have a few things sorted out now to begin our next set of deployment steps.</p>
+
+
+
+<ol class="wp-block-list">
+<li>You should have your hardware up to date with the latest available firmware.</li>
+
+
+
+<li>The hardware should be set for TPM, SecureBoot, and the storage controller in IT mode (if required).</li>
+
+
+
+<li>You should have a USB Key with the latest version of Azure Stack HCI 23H2 and the Driver/Software folder you created earlier on the root of the drive.</li>
+</ol>
+
+
+
+<h2 class="wp-block-heading"><strong>Planning</strong></h2>
+
+
+
+<p class="wp-block-paragraph">Now is a good time to pause and recommend that you take some time to plan the environment you&#8217;re going to deploy. As they say,<em> &#8220;Failing to make a plan…&#8221;</em> Seriously, you need to make a few decisions with regard to structure of the solution in order to know how all this will play out. You need to understand the infrastructure network space your HCI servers will live in:</p>
+
+
+
+<p class="wp-block-paragraph">How will they communicate with each other?</p>
+
+
+
+<p class="wp-block-paragraph">Are there VLANs and/or Firewalls involved?</p>
+
+
+
+<p class="wp-block-paragraph">What is the AD Domain you&#8217;ll connect to?</p>
+
+
+
+<p class="wp-block-paragraph">Will you need to use a Proxy to talk to Azure?</p>
+
+
+
+<p class="wp-block-paragraph">Private Endpoints?</p>
+
+
+
+<p class="wp-block-paragraph">What naming convention will you use for the systems, cluster, users?</p>
+
+
+
+<p class="wp-block-paragraph">Taking a few minutes (or more than a few) to review the network requirements. Documenting your config goes a long way in troubleshooting things later. I typically start a OneNote or Notepad doc and write down as much as I can as I go and refer to it later as needed. You can find the Network Requirements for HCI here: <a href="https://learn.microsoft.com/en-us/azure-stack/hci/concepts/physical-network-requirements?tabs=overview%2C23H2reqs">Physical network requirements for Azure Stack HCI &#8211; Azure Stack HCI | Microsoft Learn</a> But, this is just the tip of the iceberg. There is a bunch you can get lost in with this aspect of the documentation. I&#8217;m still trying to find my way out! My best advice is understand the physical topology of the environment, then look at the deployment options for the number of nodes you have referenced in the docs. Then look at the IP requirements for your chosen pattern.</p>
+
+
+
+<p class="wp-block-paragraph">I have a co-worker Kevin who loves to say Firewalls, Firewalls, Firewalls. If there&#8217;s an issue with a hybrid or &#8220;Adaptive Cloud&#8221; solution, it&#8217;s almost always firewalls. So, have a look here: <a href="https://learn.microsoft.com/en-us/azure-stack/hci/concepts/firewall-requirements">Firewall requirements for Azure Stack HCI &#8211; Azure Stack HCI | Microsoft Learn</a> and make sure you can reach the endpoints, refer your NetSec team here too and discuss if these would be an issue. Most are common and known Microsoft endpoints but it&#8217;s helpful to be proactive. Another great tool that has been developed is the Environment Checker tool, Microsoft has spent a bunch of time making sure the Hybrid connectivity can be successful. You can use this: <a href="https://learn.microsoft.com/en-us/azure-stack/hci/manage/use-environment-checker?tabs=connectivity">Use Azure Stack HCI Environment Checker to assess deployment readiness for Azure Stack HCI, version 23H2. &#8211; Azure Stack HCI | Microsoft Learn</a> to make sure your network is ready to talk to Azure, if the Hardware is up to snuff, can the nodes talk to AD or Arc endpoints and the ports are open for all the needed traffic.</p>
+
+
+
+<p class="wp-block-paragraph">In order to deploy an HCI infrastructure, you need 1 IP address per server, plus a minimum of 6 additional contiguous IPs for infrastructure that will be deployed during the cluster creation process. The first consumed will be the Cluster IP, the rest are various Failover Cluster services that will also be deployed within the solution. You may also need IPs for OOB management nics and IPs for a Domain controller or two if you are building a net new environment.</p>
+
+
+
+<p class="wp-block-paragraph">Azure Stack HCI 23H2 changes the installation and cluster deployment process compared to earlier versions. In the past, you would build everything on-prem and register the cluster as a final step. Today, you install the hypervisor and do some minor personalization config, then you register the system with Azure Arc <strong><em>BEFORE</em></strong> you form the cluster, join the domain, etc… Azure will do those steps for you. It&#8217;s a <strong>BIG</strong> improvement over the old way and handles a bunch of steps for you. You should have all of these design decisions made before you move on. Write it all down! You will need it to go through the wizard later.</p>
+
+
+
+<h2 class="wp-block-heading"><strong>Active Directory</strong></h2>
+
+
+
+<p class="wp-block-paragraph">Also, with the release of 23H2, there is now a defined method of organizing your on-prem Active Directory environment resources and a PowerShell tool to help with the deployment. Let&#8217;s start there. You should have an AD environment running. This is a Prerequisite to get Azure Stack HCI going. If you&#8217;re uncomfortable adding this solution to your existing AD Domain, you can stand one up just for Azure Stack HCI. Flo Fox has written a great blog post on the concept of Fabric Identity here: <a href="https://petri.com/azure-stack-hci-fabric-domain-network/">Why You Should Have a Fabric Domain and Network for Azure Stack HCI (petri.com)</a></p>
+
+
+
+<p class="wp-block-paragraph">The AD environment doesn&#8217;t have to be hybrid connected to EntraID to serve the needs of Azure Stack HCI. It&#8217;s used for the on-prem server identity space and the Failover Cluster configuration. Once you have the AD environment identified, we need to run the PowerShell utility to prep the environment. You should run this on a system that has access to the Active Directory environment. This wouldn&#8217;t be one of the HCI nodes, at least not yet. You can run it on a domain controller if that&#8217;s all you have. You also need to have a user account that can create an OU and User Accounts. You can pull down the PowerShell module by going to the command line and typing:</p>
+
+
+
+<pre class="wp-block-code"><code><strong><code>Install-Module AsHciADArtifactsPreCreationTool -Repository PSGallery -Force</code></strong></code></pre>
+
+
+
+<p class="wp-block-paragraph">Once you have the PowerShell module, now you need to decide what you want your OU name to be and Username. The Username should be <strong><em>JUST</em></strong> the name not a domain context as you&#8217;re already signed in to run the tool. Here is some handy code to get the objects created:</p>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<pre class="wp-block-code"><code><strong>$password = ConvertTo-SecureString '&lt;password&gt;' -AsPlainText -Force
+
+$user = "lcmuser"
+
+$credential = New-Object System.Management.Automation.PSCredential ($user, $password)
+
+New-HciAdObjectsPreCreation -AzureStackLCMUserCredential $credential -AsHciOUName "OU=ms309,DC=s31r1503,DC=microsoft,DC=com"</strong></code></pre>
+</div>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph"><mark style="background-color:#abb8c3" class="has-inline-color">Tip: If you&#8217;re Password requires the $ symbol use &#8216;single&#8217; hashes instead of &#8220;quotes&#8221;.</mark></p>
+
+
+
+<p class="wp-block-paragraph">You can validate the Domain Prep and configuration was successful by looking at the OU and User Account in <strong>Active Directory Users and Computers</strong> admin tool.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="333" data-attachment-id="1657" data-permalink="https://gbbcore.wordpress.com/2024/03/28/roll-your-own-avd-on-hci-deployment-part-2-the-plan-identity/image-1-1-2/" data-orig-file="/assets/archive/gbbcore/68a9841f-image-1-1.jpg" data-orig-size="2982,970" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/68a9841f-image-1-1.jpg" src="/assets/archive/gbbcore/68a9841f-image-1-1.jpg" alt="" class="wp-image-1657" /></figure>
+
+
+
+<p class="wp-block-paragraph">In the OU, right click go into <strong>Properties</strong> and verify that Block Inheritance was enabled.</p>
+
+
+
+<p class="wp-block-paragraph">Once you have a successful result, you&#8217;ve completed the required steps to prep the on-prem domain. Yay! You did it! High Five. See that wasn&#8217;t so bad. Now we can move on to the EntraID and Azure Subscription steps to prepare the cloud side of the deployment.</p>
+
+
+
+<h2 class="wp-block-heading"><strong>Azure</strong></h2>
+
+
+
+<p class="wp-block-paragraph">Login to the Azure Portal, if you&#8217;re using a dedicated EntraID tenant for your test environment you can switch to the right one in the upper right-hand side by selecting your username.</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1658" data-permalink="https://gbbcore.wordpress.com/2024/03/28/roll-your-own-avd-on-hci-deployment-part-2-the-plan-identity/image-2-1-2/" data-orig-file="/assets/archive/gbbcore/542ba861-image-2-1.jpg" data-orig-size="383,78" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-2-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/542ba861-image-2-1.jpg" src="/assets/archive/gbbcore/542ba861-image-2-1.jpg" alt="" class="wp-image-1658" /></figure>
+
+
+
+<p class="wp-block-paragraph">The EntraID tenant you are currently in will be shown under your account. If this is correct, great! If not, click your user account and select the correct one. Also, while you&#8217;re in here click the <strong>Star</strong> next to the Tenant to make your default on sign-in and see at the top what the default subscription is at the top. If it&#8217;s the one you&#8217;re working with great! If not, you&#8217;ll need to change that later.</p>
+
+
+
+<p class="wp-block-paragraph">Now, select the subscription under the EntraID tenant you intend to use for your HCI environment. In order to make the subscription and EntraID changes, you&#8217;ll need the rights within both to properly complete the steps. If you don&#8217;t have Owner/Contributor rights to the subscription or Admin rights within the EntraID you&#8217;ll need to work with someone who does or have them granted to you.</p>
+
+
+
+<p class="wp-block-paragraph">We need to register Resource Providers into the Subscription to allow resources to be created. This only has to be done once per subscription. The most straightforward way to do this is within the Subscription element itself.</p>
+
+
+
+<p class="wp-block-paragraph">Type in <strong>Subscription</strong> within the search box, navigate to the list of subscriptions, select the one you are using. Then within the Subscription blade scroll down on the left side to <strong>Resource Providers</strong>:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="887" data-attachment-id="1659" data-permalink="https://gbbcore.wordpress.com/2024/03/28/roll-your-own-avd-on-hci-deployment-part-2-the-plan-identity/image-3-1-2/" data-orig-file="/assets/archive/gbbcore/68ea6832-image-3-1.jpg" data-orig-size="1600,1386" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-3-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/68ea6832-image-3-1.jpg" src="/assets/archive/gbbcore/68ea6832-image-3-1.jpg" alt="" class="wp-image-1659" /></figure>
+
+
+
+<p class="wp-block-paragraph">You&#8217;ll want to register the following RPs:</p>
+
+
+
+<p class="wp-block-paragraph"><strong><em>Microsoft.HybridCompute</em></strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong><em>Microsoft.GuestConfiguration</em></strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong><em>Microsoft.HybridConnectivity</em></strong></p>
+
+
+
+<p class="wp-block-paragraph"><em><strong>Microsoft.AzureStackHCI</strong></em></p>
+
+
+
+<p class="wp-block-paragraph">Select the RPs then click <strong>Register</strong> at the top. You don&#8217;t have to wait for this to complete. Azure Resource Manager is multithreaded and will work on each one until complete. You&#8217;ll need rights to do this in the subscription. Typically, <strong>Contributor</strong> is enough.</p>
+
+
+
+<p class="wp-block-paragraph">While you&#8217;re in the subscription, also assign yourself a couple of permissions in IAM. Scroll up select <strong>IAM</strong> &#8211;&gt; Click &#8220;<strong>Add+</strong>&#8221; in the top left corner of the blade. Then select Add Role Assignment. Assign the following Roles:</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Azure Stack HCI Administrator</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Reader</strong></p>
+
+
+
+<p class="wp-block-paragraph">These will allow you to manage the HCI systems deployed within the subscription. Verify the Role Assignments are correct before moving on.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, we need to assign the required permissions to deploy the Azure Stack HCI resources. The best way to do that is to pre-create a Resource Group within the subscription. You &#8220;could&#8221; do this subscription wide, but that&#8217;s not a best practice and unless you are going to be creating 100s of clusters across dozens of RGs, it doesn&#8217;t really make sense. Even then, I&#8217;m not sure it does.</p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;ve completed assigning the RPs and your Subscription level IAM roles, scroll down to <strong>Resource Groups</strong> and create a new Resource Group. Call it whatever you like. Wait for this to complete then select the RG.</p>
+
+
+
+<p class="wp-block-paragraph">Inside the RG, you&#8217;ll go to the <strong>IAM</strong> section on the left-hand side of the blade and on the right select &#8220;<strong>Add+</strong>&#8221; like before then Add Role Assignment. You&#8217;ll want to give yourself the following roles:</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Azure Connected Machine Onboarding</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Azure Connected Machine Resource Manager</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Key Vault Administrator</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Key Vault Contributor</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Key Vault Secrets User</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Storage Account Contributor</strong></p>
+
+
+
+<p class="wp-block-paragraph">There are programmatic and additional organizational methods to make these rights assignments work at scale. You could use Azure CLI or PowerShell or Cloud Shell to perform all of this. You can also create EntraID groups to organize the assignments or even create a Service Principal to manage all of the onboarding and limit rights assignments to only those who <strong>NEED</strong> to Manage or Troubleshoot all this. All of that can, and should be done if you&#8217;re going to scale this solution, but for a limited environment with very little infra, is that worth it? If so, you can have a look here:</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://learn.microsoft.com/en-us/azure-stack/hci/deploy/deployment-arc-register-server-permissions">Register your Azure Stack HCI servers with Azure Arc and assign permissions for deployment &#8211; Azure Stack HCI | Microsoft Learn</a></p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://learn.microsoft.com/en-us/azure/azure-arc/servers/onboard-service-principal#azure-portal">Connect hybrid machines to Azure at scale &#8211; Azure Arc | Microsoft Learn</a></p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://learn.microsoft.com/en-us/entra/fundamentals/how-to-manage-groups">How to manage groups &#8211; Microsoft Entra | Microsoft Learn</a></p>
+
+
+
+<p class="wp-block-paragraph">You can use the user rights above and the role assignments with those links to construct a scalable Cloud Identity and Onboarding solution.</p>
+
+
+
+<p class="wp-block-paragraph">At this point, we&#8217;ve completed the Identity portion of the solution, and we can begin to install the HCI Nodes. Thanks to <strong>Flo Fox</strong> and <strong>Michael Godfrey</strong> for all the documentation and scripts. Oh, and thanks to <strong>Kevin Sullivan</strong> for letting me use his catch phrase. Thanks for reading!</p>
+
+{% endraw %}

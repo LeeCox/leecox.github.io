@@ -1,0 +1,315 @@
+---
+title: "VMware Migration Quest with Microsoft"
+date: 2025-03-07T16:29:19-05:00
+categories: [gbbcore]
+tags: [work]
+description: "Part 2: Charting a new way In Part 1 of this series, we discussed many of the motivators, needs, and planning for a VMware migration to Microsoft solutions. We also covered the quickest paths to accomplishing that type o"
+original_url: https://gbbcore.wordpress.com/2025/03/07/vmware-migration-quest-with-microsoft-2/
+---
+{% raw %}
+
+<p class="has-large-font-size wp-block-paragraph"><strong>Part 2: Charting a new way</strong></p>
+
+
+
+<p class="wp-block-paragraph">In <a href="https://gbbcore.wordpress.com/2025/02/28/vmware-migration-quest-with-microsoft/">Part 1</a> of this series, we discussed many of the motivators, needs, and planning for a VMware migration to Microsoft solutions. We also covered the quickest paths to accomplishing that type of migration into Azure for time sensitive needs. However, as we know not every workload can move to Azure. Some for governance and compliance reasons and some for technical reasons. But you’ve been asked to find ways to optimize your environment and reduce your spend. There are a bunch of ways Microsoft can help you there in Azure. And a few we can help you with outside of Azure while maintaining the advantages of cloud management.</p>
+
+
+
+<p class="has-tertiary-background-color has-background wp-block-paragraph"><em>This post, and the one after it, will be a bit different than the first. In the first post, the options are straightforward, and the patterns well established. It’s an easier read because cloud solutions have a simpler adoption curve. Microsoft Adaptive Cloud solutions are straightforward but also nuanced and, like all on-prem solutions, have more moving parts leading to added complexity. I’ll do my best to give you the design intent, theory of operation and implementation for the options, but ultimately only you can decide what works, or doesn’t, within your organization.</em></p>
+
+
+
+<p class="wp-block-paragraph">After taking our quick wins with the fastest path to migration with Azure, we now set off on a different leg of our migration quest, an on-premises transformation. On this path, we’ll pick up a few new party members and train some new skills while honing some older ones. The terrain is different, if familiar, and there are some steep climbs. If <a href="https://learn.microsoft.com/en-us/azure/azure-vmware/introduction">Azure VMware Solutions (AVS)</a> and <a href="https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-iaas/?msockid=11f1dd0df0d965a93706c8aaf17e64ec">Azure IaaS</a> are like Fast Travel to the best parts of the game, On-prem transformations are like grinding your favorite dungeons to level up!</p>
+
+
+
+<p class="has-medium-font-size wp-block-paragraph"><strong>All roads lead to Arc</strong></p>
+
+
+
+<p class="wp-block-paragraph">The end state is important to understand to have context for the journey. Microsoft believes strongly in a single pane of glass for management. That single pane of glass is the Azure control plane powered by <a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview">Azure Resource Manager (ARM)</a>. Azure native services benefit from the <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/overview">monitoring</a>, <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-setup-guide/monitoring-reporting?tabs=AzureMonitor">reporting</a>, <a href="https://learn.microsoft.com/en-us/azure/automation/overview">automation</a>, <a href="https://learn.microsoft.com/en-us/azure/role-based-access-control/overview">identity</a> and <a href="https://learn.microsoft.com/en-us/azure/security/fundamentals/overview">security</a> of the <a href="https://learn.microsoft.com/en-us/azure/azure-portal/azure-portal-overview">Azure Portal</a> and <a href="https://learn.microsoft.com/en-us/rest/api/azure/">API</a> experience. Resources outside of Azure weren’t really able to take advantage of these management tools in a holistic way before the advent of <a href="https://learn.microsoft.com/en-us/azure/azure-arc/overview">Azure Arc</a>.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="591" data-attachment-id="1865" data-permalink="https://gbbcore.wordpress.com/2025/03/07/vmware-migration-quest-with-microsoft-2/image-52/" data-orig-file="/assets/archive/gbbcore/41887943-image-1.png" data-orig-size="1552,896" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/41887943-image-1.png" src="/assets/archive/gbbcore/41887943-image-1.png" alt="" class="wp-image-1865" /></figure>
+
+
+
+<p class="wp-block-paragraph"><em>Azure Arc Landing Page</em></p>
+
+
+
+<p class="wp-block-paragraph">Azure Arc in its simplest form is a projection service. It allows “things” that exist outside of Azure to be seen within Azure. That one VERY simple concept is really powerful when you consider all the class leading management capabilities and services available within Azure. It allows the same organization benefits of <a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#what-is-a-resource-group">Resource Groups</a>, <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming-and-tagging-decision-guide">Tagging</a>, <a href="https://learn.microsoft.com/en-us/graph/use-the-api">Azure Graph</a> and <a href="https://www.geeksforgeeks.org/microsoft-azure-using-the-global-search/">Search</a> customers enjoy with Azure VMs, IaaS, PaaS services to work on things that aren’t “IN” Azure. It also provides the same security benefits with <a href="https://learn.microsoft.com/en-us/entra/fundamentals/whatis">EntraID</a> and <a href="https://learn.microsoft.com/en-us/azure/security/fundamentals/identity-management-best-practices">Identity Access Management (IAM)</a> integration. Those are just the start though. You’ll pick up a ton of additional benefits as you start to use other Azure services. Things like <a href="https://learn.microsoft.com/en-us/azure/azure-arc/servers/concept-log-analytics-extension-deployment">Azure Monitor</a>, <a href="https://learn.microsoft.com/en-us/azure/defender-for-cloud/quickstart-onboard-machines">Defender for Cloud</a>, <a href="https://learn.microsoft.com/en-us/azure/update-manager/workflow-update-manager">Azure Update Management</a>, <a href="https://techcommunity.microsoft.com/blog/itopstalkblog/manage-certificates-on-your-hybrid-servers-using-azure-arc-key-vault-extension/2142265">Key Vault</a>, <a href="https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations">IoT Services</a>, and the list goes on.</p>
+
+
+
+<p class="wp-block-paragraph">Azure Arc works with on-prem platforms like <a href="https://techcommunity.microsoft.com/blog/azurearcblog/introducing-azure-local-cloud-infrastructure-for-distributed-locations-enabled-b/4296017">Azure Local</a>, <a href="https://learn.microsoft.com/en-us/azure/azure-arc/vmware-vsphere/overview">VMware</a>, <a href="https://learn.microsoft.com/en-us/azure/azure-arc/system-center-virtual-machine-manager/overview">SCVMM</a> and <a href="https://learn.microsoft.com/en-us/azure/azure-arc/kubernetes/overview">Kubernetes</a> clusters. It provides visibility at the OS level too not just with <a href="https://learn.microsoft.com/en-us/azure/azure-arc/servers/windows-server-management-overview?tabs=portal">Windows</a>, but also all the popular flavors of <a href="https://learn.microsoft.com/en-us/azure/azure-arc/servers/prerequisites">Linux</a>. This isn’t restricted to Virtual Machines either, physical servers are supported as well. It also helps to future proof your existing on-prem and legacy workloads by connecting them to cloud management services and concepts. This is all done through outbound connectivity over encrypted connections. It can also communicate over <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/scenarios/hybrid/arc-enabled-servers/eslz-arc-servers-connectivity">proxy, ExpressRoute, VPN and Private Endpoints</a>.</p>
+
+
+
+<p class="wp-block-paragraph">Arc started as a single agent-based connection and has grown into an entire portfolio of services customers can consume to manage their large sprawling estates. vSphere and SCVMM have a single VM Kubernetes cluster called an <a href="https://learn.microsoft.com/en-us/azure/azure-arc/resource-bridge/overview">Arc Resource Bridge(ARB)</a> which feeds environment information into Azure. We have customers with thousands of systems being managed by Azure Arc today either centrally in a datacenter or in a distributed edge environments. All of this being done for some of their most business critical workloads.</p>
+
+
+
+<p class="wp-block-paragraph">So, what does this have to do with on-prem VMware migration with Microsoft? It’s a fair question. The answer is <em><u>everything</u></em>. Microsoft’s on-prem solutions use Azure Arc integration as a bridge to Azure. If you want to transform your environment over to Microsoft solutions, the north-star for us is Azure. How are all of these things managed? The answer is <strong><em><u>Azure</u></em></strong>. Even the latest and greatest versions of <a href="https://learn.microsoft.com/en-us/azure/azure-arc/servers/onboard-windows-server">Windows Server</a> and <a href="https://learn.microsoft.com/en-us/system-center/vmm/whats-new-in-vmm?view=sc-vmm-2025">SCVMM</a> offer direct access to Azure Arc out of the box. Microsoft also helps our customers take advantage of many Azure services through the Arc portfolio completely free if you have an active Software Assurance agreement.</p>
+
+
+
+<p class="wp-block-paragraph">Let’s look at the first option for your on-prem workload’s that can’t go to cloud.</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://learn.microsoft.com/en-us/azure/azure-local/overview"><strong>Azure Local</strong></a><strong></strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Price: ***</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Speed to Deploy: **</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Speed to Migrate: **</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Pros: On-Prem Azure managed OEM hardware for legacy and modern apps</strong></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Cons:</strong></p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Net new hardware required</strong></li>
+
+
+
+<li><strong>Not a datacenter virtualization replacement</strong></li>
+
+
+
+<li><strong>Deployment and VMware workload transformation can be lengthy</strong></li>
+</ul>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="576" data-attachment-id="1863" data-permalink="https://gbbcore.wordpress.com/2025/03/07/vmware-migration-quest-with-microsoft-2/image-51/" data-orig-file="/assets/archive/gbbcore/a88f53b9-image.png" data-orig-size="1560,878" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/a88f53b9-image.png" src="/assets/archive/gbbcore/a88f53b9-image.png" alt="" class="wp-image-1863" /><figcaption class="wp-element-caption"><em>Azure Local Solution Overview</em></figcaption></figure>
+
+
+
+<div class="wp-block-group has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="has-tertiary-background-color has-background wp-block-paragraph"><em>Given the directional nature of the solution information provided, and attempting to write for brevity, this won’t be an all-inclusive review of Azure Local or its capabilities. There is plenty of that content already available. Nor should it be treated as a substitute for official Microsoft documentation. Writers are fallible and solution options and capabilities can change over time. Please refer to the official Azure information sources linked in this post for detailed and up-to-date information.</em></p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://learn.microsoft.com/en-us/azure/azure-local/overview?view=azloc-24112">Azure Local</a> is a newly announced portfolio of on-prem OEM partner hardware solutions that connect directly into the Azure control-plane through Azure Arc. Today, we have a single “Connected Servers” option that was formerly known as Azure Stack HCI. It’s built from the ground up on the Azure Kernel code-base to offer an ever improving set of services and solution offerings. Over time the other two options in the family will become available. The Low-End Hardware option will be single or multiple node options with either an <a href="https://en.wikipedia.org/wiki/Azure_Linux">Azure Linux</a> deployment or Azure Local (Windows Kernel) deployment all driven from Azure. The Disconnected option will have a local management service control-plane that allows you to deploy and run Azure Local completely disconnected from Azure public cloud.</p>
+
+
+
+<p class="wp-block-paragraph">Yeah, I know… there’s a lot there. So let’s break down what you can get right now and how. The middle “Connected Servers” options is currently the only one <a href="https://www.azuremdm.com/2024/11/06/understanding-the-azure-service-lifecycle-public-preview-and-general-availability/">Generally Available (GA)</a>, meaning you can purchase, deploy, and get support for the product. You’ll contact your preferred OEM, after looking at your options in the <a href="https://aka.ms/AzureStackHCICatalog">Azure Local Catalog</a>, who you’ll work with to size an environment. They’ll offer one or more different types of solutions. Azure Local comes in today:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Validated Nodes</li>
+
+
+
+<li>Integrated Systems</li>
+
+
+
+<li>Premier Solutions</li>
+</ul>
+</div>
+
+
+
+<p class="wp-block-paragraph">Validated nodes are the roll your own option for customers. The OEM has tested the hardware nodes and developed a driver package to work with Azure Local, making it available for customers to use. It’s supported by them. If you have an issue you’ll need them to troubleshoot it. The Integrated Systems are a step up and offer solution level support from Microsoft and the OEM with testing multiple times per year. There are also optional support and delivery services uplifts the OEMs will usually provide. The Premier Solutions are co-engineered with Microsoft and offer a bunch of coordinated service offerings, OPEX purchase options, and advanced capabilities. Pricing and budgets will increase, around 10-20% per tier list price, as you move to the right. Please check with your OEMs for detailed pricing information.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="576" data-attachment-id="1864" data-permalink="https://gbbcore.wordpress.com/2025/03/07/vmware-migration-quest-with-microsoft-2/image-51/" data-orig-file="/assets/archive/gbbcore/3bfb2ab6-image-2.png" data-orig-size="1560,878" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/3bfb2ab6-image-2.png" src="/assets/archive/gbbcore/3bfb2ab6-image-2.png" alt="" class="wp-image-1864" /><figcaption class="wp-element-caption"><em>Detailed Azure Local Offering options</em></figcaption></figure>
+
+
+
+<p class="wp-block-paragraph"><strong>Going Rouge</strong></p>
+
+
+
+<p class="wp-block-paragraph">It’s important to point out that Azure Local does <strong><em><u>not</u></em></strong> have any ability leverage existing or reuse existing hardware. Its greenfield only. Our OEMs have worked very hard to offer solutions aligned with the latest and greatest hardware capabilities available with Azure for CPUs, GPUs, and Disk performance of the VMs and other services you deploy across Azure Local and Azure public cloud. Mismatched capabilities often leads to a poor customer experience (and performance), which no one wants.</p>
+
+
+
+<p class="wp-block-paragraph">Sure, you CAN cobble something together if you have a vendor’s bill of materials for Azure Local, access to their firmware/drivers and pull down the image from the Azure portal, but it WILL bite you in a few ways. First, very few OEMs use or make available for customers their general CTO/BTO server SKUs for Azure Local. Most OEMs preload the OS onto the systems, level set the firmware for you, and configure optional firmware settings for an Azure Local deployment. In doing so, they typically publish different SKUs compared to the normal stuff you buy from them or get through a distributor. Even if it’s based off the same hardware platform. This causes a supportability mis-match when you put an Azure Local image on a normal server. The second issue is the config. Azure Local is a Hyperconverged solution which means specific NICs, storage controllers and discs in a very specific configuration chosen by the manufacturer were tested, validated, and approved by Microsoft. Trying to back into those selections is a hard road. Thirdly, the support matrix for Azure Local and Windows Server IS different making finding the compatible parts, firmware, and drivers much more difficult. CAN you do it? Sure. Will it be supported? Please check with your OEM before you start, but most likely <strong><em><u>No</u></em></strong>. So… that effort could be good for lab testing and kicking the tires, bad for production. That said, you can learn SO much from that Awful, Horrible, No Good, Very Bad path. Trust me.</p>
+
+
+
+<p class="has-tertiary-background-color has-background wp-block-paragraph">GEEK warning! (Things are about to get VERY technical)</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Origin Story</strong></p>
+
+
+
+<p class="wp-block-paragraph">The Azure Local Hypervisor is an Azure Windows kernel branch specifically designed to deliver hyperconverged services for Compute, Storage and Networking. This is a Hyper-V based solution as almost all Azure solutions are. It uses mostly similar Failover Clustering, Storage Spaces Direct, and optionally Microsoft’s SDN stack found in Windows Server 2025. This is all derived from the original <a href="https://www.microsoft.com/en-us/windows-server/blog/2018/02/20/the-technical-value-of-wssd-validated-hci-solutions-part-1">Microsoft WSSD reference architecture</a> published for Windows Server 2016. That was the foundation for the very first Azure Stack products too. There have been a BUNCH of changes/enhancements/rationalizations since that initial architecture release.</p>
+
+
+
+<p class="wp-block-paragraph">Why is it important that this comes from an Azure branch vs say the Windows Server branch of the kernel if they use the same technologies?</p>
+
+
+
+<p class="wp-block-paragraph">There are a few reasons:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Azure dev cycles allow for more rapid enhancements than every couple of years for boxed products</li>
+
+
+
+<li>We can decouple the OS build version from the feature capabilities and iterate</li>
+
+
+
+<li>Azure support is provided with Azure solutions directly in the portal</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Microsoft’s first pass at an Azure managed solution was called Azure Stack, later renamed <a href="https://learn.microsoft.com/en-us/azure-stack/operator/azure-stack-overview?view=azs-2501">Azure Stack Hub</a>. It spawned a family of offerings culminating in <a href="https://azure.microsoft.com/en-us/blog/announcing-azure-stack-hci-a-new-member-of-the-azure-stack-family/?msockid=10cd038de33c6c4527d41625e23d6d08">Azure Stack HCI</a>. Azure Local is an improved version of that product family. What we found with Azure Stack was customers needed greater velocity from us to enhance product capabilities. Faster even than every six months or a year. As a result, Microsoft has since moved away from the Windows Server and Client OS release cadence of Azure Stack HCI such as <a href="https://support.microsoft.com/en-au/topic/release-notes-for-azure-stack-hci-version-21h2-5c5e6adf-e006-4a29-be22-f6faeff90173">21H2</a>, <a href="https://learn.microsoft.com/en-us/azure/azure-local/release-information?view=azloc-24113">22H2</a>, 23H2, etc. being the major releases. Those are still included from a Core OS perspective, but the solution enhancements are now done on Azure release train cadences of every few months. Similar to how the original Azure Stack (Hub) product is developed. You can go here to learn more about the changes: <a href="https://learn.microsoft.com/en-us/azure/azure-local/release-information-23h2?view=azloc-24112">Azure Local, version 23H2 release information &#8211; Azure Local | Microsoft Learn</a></p>
+
+
+
+<p class="wp-block-paragraph"><strong>Back to the Future</strong></p>
+
+
+
+<p class="wp-block-paragraph">The platform is being enhanced much more rapidly on this new release cadence. In fact, upgrading from an Azure Stack HCI releases like 22H2 to the current build moves you directly into the new Azure Local release train with all those new features. Also 23H2 and the Azure Local name change should be treated like a new version of the product by adopting this methodology. As a result, these enhancements will need to be adopted by your organization as the product evolves. This is a VERY different requirement than version changes to vSphere products. If that makes you uncomfortable, we completely understand. Adopting features at a fast clip can be jarring and require different testing and roll out plans. It’s worth the time to discuss this internally and decide if adopting change at the speed of Azure is right for your business. Here are some of the big things you’ll get in just over a years’ time if so:</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1871" data-permalink="https://gbbcore.wordpress.com/2025/03/07/vmware-migration-quest-with-microsoft-2/roadmap-2/" data-orig-file="/assets/archive/gbbcore/21fbdb55-roadmap-1.jpg" data-orig-size="644,364" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="Roadmap" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/21fbdb55-roadmap-1.jpg" src="/assets/archive/gbbcore/21fbdb55-roadmap-1.jpg" alt="" class="wp-image-1871" /><figcaption class="wp-element-caption"><em>Azure Local public roadmap &#8211; March 2025</em></figcaption></figure>
+
+
+
+<p class="wp-block-paragraph"><strong>Deployment</strong></p>
+
+
+
+<p class="wp-block-paragraph">Azure Local is cloud deployed and managed from the start. Where Azure Stack HCI was connected to Azure as one of the final deployment steps. It’s not possible to run this product without connecting to Azure. The Azure Local deployment process is a set of ARM templates or an Azure portal based wizard experience that will build, validate, and deploy the infrastructure remotely. There’s a clear separation of the hardware deployment actions and the solution deployment actions. This allows greater flexibility and separation of roles for our customers.</p>
+
+
+
+<p class="wp-block-paragraph">All of the nodes will need to have an identical configuration. They will need to be installed, cabled, and powered on. Someone will connect to them and register with Azure Arc. Please don’t deviate from the documented deployment process. Installing Non-OEM 3<sup>rd</sup> party software on the hosts is not supported. In fact, outside of installing drivers and firmware or configuring a hostname, IP, DNS (proxy if required) and Azure Arc registration. Do nothing else locally. After the nodes show in Azure, you go straight into the deployment wizard to form the cluster. There’s a lot of flexibility in how you configure the networking topology and storage configuration. Many customers chose to replicate their vSphere node connectivity. Just know that the storage network should be redundant and it doesn’t need to have unique IPs or a gateway per cluster, but the broadcast (L2) space should be for one cluster only. Make sure not to get your wires crossed in the process! There are also built-in defaults available for security and storage to help first time users deploy in a secure and scalable solution.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Day 2 Operations</strong></p>
+
+
+
+<p class="wp-block-paragraph">Management of the cluster and workloads can all be done within the Azure portal under the Arc landing page. We have a bunch of tools outside of just the deployment workflows though. We’ve integrated cluster management with <a href="https://learn.microsoft.com/en-us/azure/azure-local/manage/vm?view=azloc-24113">Windows Admin Center (WAC)</a> directly in the portal. We’ve connected <a href="https://learn.microsoft.com/en-us/azure/azure-local/update/azure-update-manager-23h2?view=azloc-24113&amp;tabs=azureupdatemanager">Azure Update Manager</a> with a cluster specific view which will perform a coordinated update process across the nodes to keep workloads running. We’ve worked with our OEMs to integrate their updates into those update workflows as well. You can also deploy VMs the same way you do within Azure (<a href="https://learn.microsoft.com/en-us/azure/azure-local/manage/create-arc-virtual-machines?view=azloc-24113&amp;tabs=azurecli">Portal, API, CLI and Automation</a>) using Azure images to your own locations. You can manage those <a href="https://learn.microsoft.com/en-us/azure/azure-local/manage/manage-arc-virtual-machines?view=azloc-24113&amp;tabs=windows">VMs directly within the portal</a> as if they are Azure VMs (because they are, they run on an Azure platform). What isn’t able to be done today is cluster management operations via command line or programmatically within Azure Resource Manager (ARM). Those can be done interactively within the WAC, but if you want to automate something related to the cluster you’ll need to drop back to PowerShell or a PowerShell integrated automation tool, at least for the time being. This is being worked on, but it’s not available today. WAC within the Azure portal isn’t the only management option available. You can also deploy WAC locally for management should it be required. This can be helpful if your environment become disconnected from Azure. It’s the same web based experience just running locally. Don’t worry, all your running workloads will continue to operate without the cloud control plane. Azure Local can run disconnected from Azure for up to 30 days. <a href="https://learn.microsoft.com/en-us/system-center/vmm/manage-azure-stack-hci?view=sc-vmm-2025&amp;source=recommendations">SCVMM</a> is also an option for our System Center customers to managed Azure Local. It offers scalable cluster management across a large number of Azure Local clusters.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Do’s and Don’ts</strong></p>
+
+
+
+<p class="wp-block-paragraph">Another thing to note, Azure Local isn’t a product primarily targeted for datacenter virtualization or high concentration compute. The published <a href="https://learn.microsoft.com/en-us/azure/azure-local/concepts/system-requirements-23h2?view=azloc-24113#machine-and-storage-requirements">maximum cluster size</a> is 16 nodes. The practical limit, which is determined by our OEMs, is really around 6-8 nodes per cluster. The majority though are being deployed as 2-3 node clusters for point compute needs in edge locations or for appliance like workloads. Why 6-8 instead 16? It’s a matter of physics and money.</p>
+
+
+
+<p class="wp-block-paragraph">Almost all of these Azure Local clusters purchased today are deployed with NVME storage. The solution being a hyperconverged design where all the disks are managed by the CPUs in a pool across the cluster storage network fabric. NVME transmits data at PCIE speed replicating across a cluster disks in real-time. It makes the solution very performant, but with each node added, the network traffic increases exponentially. Throw in VM migration traffic between the nodes and network requirements can easily approach or exceed the limits of 100Gb ethernet with higher node counts. It can get expensive quickly. Microsoft has designed a lower cost option though, 2-4 Nodes can be <a href="https://learn.microsoft.com/en-us/azure/azure-local/plan/three-node-switchless-two-switches-two-links?view=azloc-24113">directly connected</a> without switches. This saves you money and network complexity. Azure Local also doesn’t support any SAN attached, SAS, or MPIO storage or perform any type of integrated SAN fabric management by default.</p>
+
+
+
+<p class="wp-block-paragraph">Another factor is management, the solution being Azure managed means there’s a management controller deployed automatically when the cluster is created. This controller is the same type used for SCVMM and vSphere, the <a href="https://learn.microsoft.com/en-us/azure/azure-arc/resource-bridge/release-notes">Arc Resource Bridge</a>. Today, there’s a 1:1 mapping for the ARB and Azure Local cluster resource. This creates a single island of &nbsp;management per cluster. It can be really good for remote or distributed sites, a little unwieldy within the datacenter.</p>
+
+
+
+<p class="wp-block-paragraph">As an example, consider a datacenter with 8-10 racks in a single row. You can fit two clusters in each rack or spread them across racks for redundancy. That would be up to 20 different Azure management endpoints per row! There are practical management limits at play here. This is the primary <a>reason why</a> we also support SCVMM as a management option for Azure Local.</p>
+
+
+
+<p class="wp-block-paragraph">So, if you don’t put Azure Local in a datacenter, where do you put it? The most common customer demand we see is for deployments outside of the datacenter. These would be small to medium size businesses, distribution centers, field offices, retail, manufacturing, and medical facilities are all good candidates. You CAN deploy in a datacenter, however it’s not intended to replace any existing datacenter virtualization layer. The most common use for datacenter deployments are <a href="https://learn.microsoft.com/en-us/azure/aks/aksarc/aks-whats-new-23h2">Kubernetes clusters</a>, <a href="https://learn.microsoft.com/en-us/azure/virtual-desktop/azure-local-overview">VDI/DaaS workloads</a>, <a href="https://learn.microsoft.com/en-us/azure/iot-operations/overview-iot-operations">IoT workloads</a>, <a href="https://techcommunity.microsoft.com/blog/azurearcblog/extending-azures-ai-platform-with-an-adaptive-cloud-approach/4303589">AI workloads</a> and applications that need to live next to other system types that can’t leave the datacenter like Mainframes, Midframes and the like. In other words, contained use cases where you need a specific compute profile.</p>
+
+
+
+<p class="wp-block-paragraph">If you’ve made it this far congrats! I usually lose some players a few paragraphs back. If you decide that you want to try out Azure Local, what does that look like? The most direct path is to go here: <a href="https://jumpstart.azure.com/azure_jumpstart_hcibox/getting_started">Azure Arc Jumpstart: Azure Local HCIBox</a>. This will give you the general look and feel that you can deploy today. You can also review the relevant <a href="https://learn.microsoft.com/en-us/azure/azure-local/?view=azloc-24113">documentation</a>, <a href="https://learn.microsoft.com/en-us/azure/azure-local/release-information-23h2?view=azloc-24113#azure-local-release-information-summary">release notes</a>, and <a href="https://learn.microsoft.com/en-us/azure/azure-local/whats-new?view=azloc-24113">enhancements</a>. Once you’ve kicked the tires a bit, reach out to your reseller, OEM rep, or Microsoft Partner to get started on the path.</p>
+
+
+
+<p class="wp-block-paragraph">Depending on the selections you make, installation services may be optional or included for your deployment. I highly recommend you take advantage of them. Implementation of a cloud controlled infrastructure is a VERY different thing than a VMware vSphere environment. There is a lot of planning required. Depending on your organization it could take a while to get the needed approvals for a purchase and working through the Azure endpoint requirements, setting up proxy exceptions, or Private Endpoint DNS configuration. There are also services in preview for Azure like the Azure Arc Gateway which can help, but those require configuration and planning also.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Just say no</strong></p>
+
+
+
+<p class="wp-block-paragraph">A note on a VMware head-to-head evaluations. When we get requests for these, I actively avoid them. As do many others I know. Azure Local is a different animal than VMware Cloud Foundation (VCF) or standard vSphere. Sure, they both host VMs and Containers, can be had as an HCI configuration, and they are both offered through OEMs as a packaged solution. Walk like a Duck, talk like a Duck and all. That’s really where the similarities end though. This is all a matter of the perspective and history of each offering. VMware has spent decades perfecting the on-prem virtualization space. Differentiating themselves with a bunch of solution capabilities unique to them. There are tons of features it will have which Azure Local simply won’t. Microsoft has spent decades perfecting our cloud virtualization platform (Azure) and offering bundled virtualization capabilities with Windows Server Hyper-V. There’s tons of stuff we can do that VMware can’t. And, I know what you’re thinking, “Great, just give the list for each or product comparison matrix.” Unfortunately, there isn’t one. At least not one published by Microsoft. These products aren’t direct competitors. It really is an Apples and Oranges comparison.</p>
+
+
+
+<p class="wp-block-paragraph">&nbsp;I always encourage our customers to focus on business and hard technical requirements.</p>
+
+
+
+<ul class="wp-block-list">
+<li>What do you need it to do?</li>
+
+
+
+<li>How do you need it to perform?</li>
+
+
+
+<li>Does it meet your resiliency needs?</li>
+
+
+
+<li>Do the solutions meet those requirements?</li>
+
+
+
+<li>What’s the CAPEX or OPEX cost to implement the solution?</li>
+
+
+
+<li>How is it to manage?</li>
+
+
+
+<li>How much of your environment is in the cloud or moving there soon?</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">We know you love VMware. That’s why it’s a successful product run by almost <a>all of</a> our customers. If your evaluation is for a feature-by-feature VMware replacement, I’ll save you a bunch of time. Azure Local won’t succeed. If you look at Azure Local as a cloud managed on-prem <a>compute</a> platform, it does that really well. It’s your business critical local compute for when everything else is moved to Azure.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The End</strong></p>
+
+
+
+<p class="wp-block-paragraph">Seismic market shifts, like the one we’re in now, are an opportunity to re-evaluate the long-term solution strategy for your business. We think that Azure Local does a great job of helping our customers accelerate their transition to cloud while addressing those portions of the business which can’t be easily moved.</p>
+
+
+
+<p class="wp-block-paragraph">There are a whole set of other topics which come up after a customer decides to move down this path. How can I migrate my workloads, what are the costs involved, how can we move quickly with as little disruption as possible? Or alternatively, you convinced me that Azure Local isn’t quite right for me but how about that Hyper-V thing you guys used to talk about all the time? What does that path look like?</p>
+
+
+
+<p class="wp-block-paragraph">Those topics and a few others will be included in the next part of this series. Thanks so much for reading! I hope you found it valuable.</p>
+
+{% endraw %}

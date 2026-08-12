@@ -1,0 +1,28 @@
+---
+layout: default
+---
+<article class="post">
+  <header class="post-header">
+    <div class="post-row-meta">
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>
+      {% for tag in page.tags %}
+      {% assign topic = site.data.topics | where: "slug", tag | first %}
+      {% if topic %}<a class="chip" href="{{ '/topics/' | append: topic.slug | append: '/' | relative_url }}">📁 {{ topic.name }}</a>{% endif %}
+      {% endfor %}
+    </div>
+    <h1>{{ page.title }}</h1>
+    <hr>
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+
+  <footer class="post-footer">
+    <hr>
+    <p>&lt;&lt; <a href="{{ '/' | relative_url }}">Back to Home</a>
+    {% assign ft = site.data.topics | where: "slug", page.tags.first | first %}
+    {% if ft %} | <a href="{{ '/topics/' | append: ft.slug | append: '/' | relative_url }}">More in {{ ft.name }}</a>{% endif %}
+    | <a href="#top">Top of page</a> &gt;&gt;</p>
+  </footer>
+</article>

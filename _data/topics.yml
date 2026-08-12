@@ -1,0 +1,26 @@
+# The four topics. `slug` must match values used in post `tags`.
+# (Post `categories` are legacy URL components only — the UI runs on tags.)
+- slug: work
+  name: Work
+  blurb: >-
+    The day job: cloud migration strategy, enterprise architecture,
+    conference weeks, navigating the career, and my posts from the
+    GBB-era team blog (preserved with their original dates).
+- slug: lab
+  name: Lab
+  blurb: >-
+    The Adaptive Cloud home lab: Azure Local, Windows Server, and AKS on
+    a rack of edge hardware, the agents that help run it, and the
+    tooling that earns its keep.
+- slug: garage
+  name: Garage
+  blurb: >-
+    The other kind of engineering: a 2010 Lincoln MKT EcoBoost that runs
+    a lot harder than it looks, Ford module programming, Tesla retrofits
+    and gateway-config spelunking, and whatever else is up on jack stands.
+- slug: research
+  name: Research
+  blurb: >-
+    Experiments and deep dives: agentic engineering workflows, edge AI
+    builds, part-number archaeology, and the rabbit holes that turned
+    out to be worth documenting.

@@ -1,0 +1,383 @@
+---
+title: "Roll your own AVD on HCI deployment – Part 4: Turn it up!"
+date: 2024-04-01T19:54:02+00:00
+categories: [gbbcore]
+tags: [work, lab]
+description: "Lee Cox – Advanced Migration GBB Welcome back to Part 4 of our Blog series. Thanks for taking the time to follow along. So? How did it go? Did you get through the whole thing with only one pass? I know I didn’t… 😉 Post-D"
+original_url: https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/
+---
+{% raw %}
+
+<p class="wp-block-paragraph">Lee Cox &#8211; Advanced Migration GBB</p>
+
+
+
+<p class="wp-block-paragraph">Welcome back to Part 4 of our Blog series. Thanks for taking the time to follow along. So? How did it go? Did you get through the whole thing with only one pass? I know I didn&#8217;t… 😉</p>
+
+
+
+<h2 class="wp-block-heading"><strong>Post-Deployment Shenanigans</strong></h2>
+
+
+
+<p class="wp-block-paragraph">Once you are done, you&#8217;ll have a bunch of new elements within your Resource Group. Here&#8217;s an idea of what it should look like:</p>
+
+
+
+<figure class="wp-block-image size-full is-resized"><img data-attachment-id="1673" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-1-8/" data-orig-file="/assets/archive/gbbcore/f1ebc11a-image-1.jpg" data-orig-size="710,757" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/f1ebc11a-image-1.jpg" src="/assets/archive/gbbcore/f1ebc11a-image-1.jpg" alt="" class="wp-image-1673" style="aspect-ratio:1;width:840px;height:auto" /></figure>
+
+
+
+<p class="wp-block-paragraph">The <strong>HCICluster</strong> element is your main player from now on. He&#8217;s got all the goods on the nodes, storage, and where you can go to get monitoring info and performance stats. There are a few things to do here so let&#8217;s click on him and go for a tour!</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="485" data-attachment-id="1674" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-2-8/" data-orig-file="/assets/archive/gbbcore/0b8331c0-image-2.jpg" data-orig-size="3120,1478" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-2" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/0b8331c0-image-2.jpg" src="/assets/archive/gbbcore/0b8331c0-image-2.jpg" alt="" class="wp-image-1674" /></figure>
+
+
+
+<p class="wp-block-paragraph">Go into <strong>Windows Admin Center</strong> and deploy the Admin Center Extension to enable that feature. Super handy for cluster management, real time reporting metrics, and networking/storage config. It will take a while for it to deploy the Extensions and enable the feature.</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1675" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-3-6/" data-orig-file="/assets/archive/gbbcore/2a978cac-image-3.jpg" data-orig-size="343,449" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-3" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/2a978cac-image-3.jpg" src="/assets/archive/gbbcore/2a978cac-image-3.jpg" alt="" class="wp-image-1675" /></figure>
+
+
+
+<p class="wp-block-paragraph">Next lets go back to the main Cluster blade and select <strong>VM Images</strong>. VM Images is the local repository for VM disk images we want to deploy from on the HCI Cluster.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="338" data-attachment-id="1677" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-4-8/" data-orig-file="/assets/archive/gbbcore/d25b3d9a-image-4.jpg" data-orig-size="1032,341" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-4" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/d25b3d9a-image-4.jpg" src="/assets/archive/gbbcore/d25b3d9a-image-4.jpg" alt="" class="wp-image-1677" /></figure>
+
+
+
+<p class="wp-block-paragraph">Now we want to select Add VM Image. Here we can add Images from several places. The most common is the Marketplace, but if you have custom images in your Azure environment or on a local file share you can add those here too. Just remember these images need to be compatible with <strong>Azure</strong> to be useful. You can always pull-down one from the Marketplace and customize it for your needs then save that for reuse.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="145" data-attachment-id="1678" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-5-8/" data-orig-file="/assets/archive/gbbcore/5dd753ca-image-5.jpg" data-orig-size="2582,367" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-5" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/5dd753ca-image-5.jpg" src="/assets/archive/gbbcore/5dd753ca-image-5.jpg" alt="" class="wp-image-1678" /></figure>
+
+
+
+<p class="wp-block-paragraph">After you&#8217;ve added a few images to the system, say Windows Server 2022 Azure edition and Windows 11 with M365 from the Azure Marketplace they will show as images you can select in the VM deployment flow.</p>
+
+
+
+<p class="wp-block-paragraph">After adding the images and letting the rest of the deployments complete, you should now be able to connect to Windows Admin Center. Let&#8217;s go there and click <strong>Connect.</strong> Once the &#8220;WAC&#8221; interface loads up navigate down the left-hand side to the <strong>Network ATC</strong> option and Click on <strong>Deploy Network ATC Network HUD</strong>. This lets us see and manipulate the Network Intents we defined when we deployed. This will take a few seconds but once done you should see all the network interfaces and intents they are deployed on:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="243" data-attachment-id="1679" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-6-8/" data-orig-file="/assets/archive/gbbcore/518142ce-image-6.jpg" data-orig-size="2653,630" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-6" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/518142ce-image-6.jpg" src="/assets/archive/gbbcore/518142ce-image-6.jpg" alt="" class="wp-image-1679" /></figure>
+
+
+
+<p class="wp-block-paragraph">Ensure that the proper interfaces are matching the correct intent on the servers. Also, make note of the Compute Virtual Switch name for later!</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="445" data-attachment-id="1680" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-7-6/" data-orig-file="/assets/archive/gbbcore/a8e79401-image-7.jpg" data-orig-size="2762,1202" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-7" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/a8e79401-image-7.jpg" src="/assets/archive/gbbcore/a8e79401-image-7.jpg" alt="" class="wp-image-1680" /></figure>
+
+
+
+<p class="wp-block-paragraph">Next, I go into the cluster <strong>Settings</strong> then to <strong>Storage Spaces and pools</strong> and I select <strong>Thin</strong> for the default provisioning type. This will reduce the storage consumption on the S2D Volumes for the VMs deployed.</p>
+
+
+
+<p class="wp-block-paragraph">Finally, I&#8217;ll check the <strong>Updates</strong> area on the cluster, and <strong>Enable Cluster Aware Updating</strong>. Once I&#8217;m finished up in here, I&#8217;ll drop back to the main HCI Cluster Blade and leave WAC.</p>
+
+
+
+<p class="wp-block-paragraph">Now, select <strong>Logical Networks</strong> on the left-hand side and define one. On my home network, I have a predefined DHCP scope deployed already so I selected that to be my network in the HCI environment.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="699" data-attachment-id="1681" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-8-6/" data-orig-file="/assets/archive/gbbcore/0c9d40f4-image-8.jpg" data-orig-size="1577,1077" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-8" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/0c9d40f4-image-8.jpg" src="/assets/archive/gbbcore/0c9d40f4-image-8.jpg" alt="" class="wp-image-1681" /></figure>
+
+
+
+<p class="wp-block-paragraph">Very quick to setup a DHCP Logical Network. Nothing to enter! Except! That <strong>Virtual switch name</strong> from <strong>WAC &#8211; Network Intents</strong> page, yes the whole weird thing the deployment named it. Some of the services you can deploy onto your new HCI environment do require a DHCP Logical Network.</p>
+
+
+
+<p class="wp-block-paragraph">&nbsp;Next, go down to the Operations section and select <strong>Updates</strong></p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1682" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-9-6/" data-orig-file="/assets/archive/gbbcore/365ce1a3-image-9.jpg" data-orig-size="462,206" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-9" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/365ce1a3-image-9.jpg" src="/assets/archive/gbbcore/365ce1a3-image-9.jpg" alt="" class="wp-image-1682" /></figure>
+
+
+
+<p class="wp-block-paragraph">If when you get into the Azure Update Manager area, there are no pending updates then you&#8217;re done! It will look something like this:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="200" data-attachment-id="1683" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-10-6/" data-orig-file="/assets/archive/gbbcore/092be625-image-10.jpg" data-orig-size="1994,391" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-10" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/092be625-image-10.jpg" src="/assets/archive/gbbcore/092be625-image-10.jpg" alt="" class="wp-image-1683" /></figure>
+
+
+
+<p class="wp-block-paragraph">If however, it looks like this:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="208" data-attachment-id="1684" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-11-4/" data-orig-file="/assets/archive/gbbcore/66873e56-image-11.jpg" data-orig-size="1990,406" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-11" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/66873e56-image-11.jpg" src="/assets/archive/gbbcore/66873e56-image-11.jpg" alt="" class="wp-image-1684" /></figure>
+
+
+
+<p class="wp-block-paragraph">Then you select <strong>One-time update</strong> and step through the wizard to complete the install.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="338" data-attachment-id="1685" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-12-4/" data-orig-file="/assets/archive/gbbcore/0e6d7df2-image-12.jpg" data-orig-size="2074,685" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-12" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/0e6d7df2-image-12.jpg" src="/assets/archive/gbbcore/0e6d7df2-image-12.jpg" alt="" class="wp-image-1685" /></figure>
+
+
+
+<p class="wp-block-paragraph">Here we have a completed monthly update of the system.</p>
+
+
+
+<p class="wp-block-paragraph">After you&#8217;ve run through and completed the updates to the system, you&#8217;re done with the Day 1 and 2 activities to deploy the Azure Stack HCI solution. Woohoo! Now we can start deploying VMs and Services onto the cluster!</p>
+
+
+
+<h2 class="wp-block-heading"><strong>Deploying AVD on HCI</strong></h2>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ve had a &#8220;bit&#8221; of work getting here, but our cluster is now humming along and ready to accept Azure services! You can deploy regular VMs, AKS on HCI, and AVD on HCI right out of the box with some minor config. Arc enabled services can be layered on top of AKS for PaaS DB, App, AI/ML solutions as well.</p>
+
+
+
+<p class="wp-block-paragraph">Given that I work with AVD on a regular basis, I thought I&#8217;d cover what that deployment experience is like with the HCI. Azure Stack HCI can run the host pool for the Azure Virtual Desktop solution. One critical point to make here is the control place for AVD is still hosted in Azure. You can however use RDP Shortpath to have local users direct connect to the session host over UDP on HCI after authentication and authorization through the AVD control plane in Azure.</p>
+
+
+
+<p class="wp-block-paragraph">There are a few prerequisites here to point out that are important to understanding how AVD on Azure Stack HCI runs:</p>
+
+
+
+<ul class="wp-block-list">
+<li><em>You need a <strong>Hybrid Identity</strong> Setup with <strong>EntraID</strong> federated to your on-prem host pool AD environment.</em> Today, AVD on HCI doesn&#8217;t support EntraID Only joined domain hosts. However, if you remember all the way back at the beginning where I proposed the idea of a Fabric Identity, you aren&#8217;t limited to the domain used to deploy HCI. As I mentioned then, the HCI cluster identity and the workload identity can be separate domains. So, your user identity space can be the one you deploy with AVD.</li>
+</ul>
+
+
+
+<ul class="wp-block-list">
+<li><em>Azure Stack HCI and the AVD Host Pool must be registered within the <strong>same EntraID tenant</strong></em>. I know this will be confusing based on the first one but hang with me. Azure Arc underpins all of this, and Arc resources can be registered with <strong>ANY</strong> EntraID tenant. The local identity and the cloud identity are separate things with Azure Arc. So, while your local HCI cluster might be on <em>azurestack.local</em> AD domain, and your users might be on <em>contoso.com.</em> Your EntraID cloud identity domain might need to be hybrid joined to <em>contoso.com</em>, if that&#8217;s your <strong>User</strong> domain. The <em>azurestack.local</em> isn&#8217;t connected to anything at all, but we have registered the HCI hosts into Azure Arc within an EntraID tenant. Your AVD Host Pool that gets deployed onto the target cluster needs to be in the same Tenant of <em>contoso.onmicrosoft.com</em> and in the same subscription.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">See this graphic below to help illustrate:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="539" data-attachment-id="1686" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-13-4/" data-orig-file="/assets/archive/gbbcore/c0ec6a9b-image-13.jpg" data-orig-size="2002,1055" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-13" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/c0ec6a9b-image-13.jpg" src="/assets/archive/gbbcore/c0ec6a9b-image-13.jpg" alt="" class="wp-image-1686" /></figure>
+
+
+
+<p class="wp-block-paragraph">Here you can see your AVD Host Pool VMs are connected into the AD Domain <em>contoso.com</em> which is Hybrid Connected to EntraID tenant <em>contoso.onmicrosoft.com</em>. Your HCI nodes are connected into <em>azurestack.local</em> AD domain and are also registered into your subscription under <em>contoso.onmicrosoft.com</em> EntraID Tenant as well. Now, you don&#8217;t have to deploy it this way. Your Fabric domain and User Domain can be the same. But if you need this level of sophistication, it&#8217;s possible. </p>
+
+
+
+<ul class="wp-block-list">
+<li>You need to have a Windows Server 2022 or Windows 10/11 Image deployed to the HCI cluster to deploy the Session Host Pool. (Remember from above?)</li>
+
+
+
+<li>You need to deploy a Logical Network <strong><em>with DHCP</em></strong> to create session hosts today. (We did this one too!)</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">You can verify that your HCI Cluster is prepared and meets the AVD Requirements by going to the HCI Cluster element in the Portal and looking under the <strong>Getting Started</strong> section.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="484" data-attachment-id="1687" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-14-3/" data-orig-file="/assets/archive/gbbcore/5f85edae-image-14.jpg" data-orig-size="1577,746" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-14" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/5f85edae-image-14.jpg" src="/assets/archive/gbbcore/5f85edae-image-14.jpg" alt="" class="wp-image-1687" /></figure>
+
+
+
+<p class="wp-block-paragraph">If you have the green check mark, you&#8217;re good to go. (Provided you&#8217;ve connected the workload/user identity domain to EntraID as explained above, this checker won&#8217;t validate that given the complexity.) If you have a red X, then click on the hyperlink and see what you&#8217;re missing.</p>
+
+
+
+<p class="wp-block-paragraph">Let&#8217;s select <strong>Deploy</strong> to go to the AVD Host Pool deployment wizard. It will open a new browser window and authenticate you.</p>
+
+
+
+<p class="wp-block-paragraph">Right away you&#8217;ll see that the deployment experience for AVD on HCI is the same as any Host Pool creation flow.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="846" height="1023" data-attachment-id="1688" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-15-3/" data-orig-file="/assets/archive/gbbcore/39b0b8db-image-15.jpg" data-orig-size="1436,1738" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-15" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/39b0b8db-image-15.jpg" src="/assets/archive/gbbcore/39b0b8db-image-15.jpg" alt="" class="wp-image-1688" /></figure>
+
+
+
+<p class="wp-block-paragraph">Select the relevant parameters for your environment and then select <strong>Next: Virtual Machines</strong></p>
+
+
+
+<p class="wp-block-paragraph">This part of the deployment is where we diverge from a standard AVD deployment. Select the radio button to <em>&#8220;Add virtual machines&#8221; </em><strong>Yes</strong>.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="922" height="1023" data-attachment-id="1689" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-16-3/" data-orig-file="/assets/archive/gbbcore/5891999b-image-16.jpg" data-orig-size="1405,1560" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-16" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/5891999b-image-16.jpg" src="/assets/archive/gbbcore/5891999b-image-16.jpg" alt="" class="wp-image-1689" /></figure>
+
+
+
+<p class="wp-block-paragraph">Complete the rest of the required information to perform an Azure Stack HCI deployment by making selections and scrolling to the bottom of the screen:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Give the VMs a Prefix name: IE AVD, POOL, etc…</li>
+
+
+
+<li>Tick the radio button for <strong>Azure Stack HCI virtual machine</strong></li>
+
+
+
+<li>Select the HCI Cluster Customer Location</li>
+
+
+
+<li>Select an Image (or if you didn&#8217;t add one yet, add one!)</li>
+
+
+
+<li>Specify the VM configuration you want on the HCI cluster and the number of VMs to deploy.
+<ul class="wp-block-list">
+<li>It&#8217;s worth pausing here to mention this will impact cost. VMs are meter at .01 per vCPU per hour or 7.30/month roughly. So for the example below that has 3 VMs with 4 vCPUs per, it&#8217;s almost $90/Month at list price.</li>
+
+
+
+<li>Also, if you&#8217;d like to make your life easy, line up the VM config to Azure based VMs from the same CPU family. It will help with performance expectations of your users. Below that’s roughly a D4s v3 with the Broadwell based gear I&#8217;m deploying onto.</li>
+</ul>
+</li>
+
+
+
+<li>Specify the Logical Network you defined <em>with DHCP</em> previously. (You did that right?)</li>
+</ul>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="984" height="1024" data-attachment-id="1690" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-17-3/" data-orig-file="/assets/archive/gbbcore/2e1be186-image-17.jpg" data-orig-size="1414,1472" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-17" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/2e1be186-image-17.jpg" src="/assets/archive/gbbcore/2e1be186-image-17.jpg" alt="" class="wp-image-1690" /></figure>
+
+
+
+<ul class="wp-block-list">
+<li>Provide the Active Directory environment you want the HCI VMs to join. Remember no EntraID only!
+<ul class="wp-block-list">
+<li>The User Account needs to be able to connect to domain and add systems.</li>
+
+
+
+<li>The DHCP scope needs to refer to the proper DNS for the Domain to reach it.</li>
+
+
+
+<li>If you want to specific the OU to drop the hosts into that information it needs to be in the proper format without &#8220;quotes&#8221;.</li>
+</ul>
+</li>
+
+
+
+<li>Finally define the local admin information for the VMs with a password and click <strong>Next: Workspace</strong></li>
+</ul>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="264" data-attachment-id="1691" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-18-3/" data-orig-file="/assets/archive/gbbcore/194418b0-image-18.jpg" data-orig-size="1407,363" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-18" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/194418b0-image-18.jpg" src="/assets/archive/gbbcore/194418b0-image-18.jpg" alt="" class="wp-image-1691" /></figure>
+
+
+
+<p class="wp-block-paragraph">Here click, the radio button to add the VMs into a default desktop application group, then either create a workspace or select an existing one. Once done, click <strong>Next: Advanced</strong> at the bottom.</p>
+
+
+
+<p class="wp-block-paragraph">Enable diagnostics if you like and select a workspace to send the data if you so choose. Then click <strong>Next: Tags</strong> to continue.</p>
+
+
+
+<p class="wp-block-paragraph">Add relevant tags and information here for the resources the deployment wizard will create if needed. Then finally click <strong>Review + create</strong>.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="690" height="1023" data-attachment-id="1692" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-19-3/" data-orig-file="/assets/archive/gbbcore/d0ced7e4-image-19.jpg" data-orig-size="1089,1616" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-19" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/d0ced7e4-image-19.jpg" src="/assets/archive/gbbcore/d0ced7e4-image-19.jpg" alt="" class="wp-image-1692" /></figure>
+
+
+
+<p class="wp-block-paragraph">The validation should come back good if you&#8217;ve provided all the required information. This process will take a while. Don&#8217;t forget to download the template should you need to redeploy or add it to your Automation workflows for the future!</p>
+
+
+
+<p class="wp-block-paragraph">The deployment might fail due to resource constraints, missing or incorrect domain information, and exhausted DHCP scope, missing DNS info for the VMs to pick up domain info. Point being there may be some troubleshooting to get a successful deployment. Give it a few tries, dig into the logs and generally bang it out. </p>
+
+
+
+<p class="wp-block-paragraph">Once Azure Resource Manager notifies you the deployment is complete, you should see the VMs under the HCI VM list:</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="265" data-attachment-id="1693" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-20-3/" data-orig-file="/assets/archive/gbbcore/3365e4f0-image-20.jpg" data-orig-size="2055,533" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-20" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/3365e4f0-image-20.jpg" src="/assets/archive/gbbcore/3365e4f0-image-20.jpg" alt="" class="wp-image-1693" /></figure>
+
+
+
+<p class="wp-block-paragraph">And the AVD Control Plane within Host Pools:</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1694" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-21-3/" data-orig-file="/assets/archive/gbbcore/a1c12f1e-image-21.jpg" data-orig-size="1379,614" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-21" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/a1c12f1e-image-21.jpg" src="/assets/archive/gbbcore/a1c12f1e-image-21.jpg" alt="" class="wp-image-1694" /></figure>
+
+
+
+<p class="wp-block-paragraph">Here you can see I have two Hosts running on my cluster and they show in the AVD Host Pool. They are deployed to my Fabric Identity. I&#8217;m only using this for testing and due to the quirk of me deploying into a Microsoft Corporate tenant, I can&#8217;t actually Hybrid connect to the EntraID tenant. So, this is good to see the deployment workflow functions, but otherwise may not be representative of your environment requirements. </p>
+
+
+
+<p class="wp-block-paragraph">From here, you also can go through the process of deploying the <strong>Remote Desktop App</strong> or the <strong>Windows App</strong> from the Microsoft Store. The Windows App is the new unified client for all RDP connections.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="297" data-attachment-id="1695" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-22-3/" data-orig-file="/assets/archive/gbbcore/39bbef42-image-22.jpg" data-orig-size="1822,530" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-22" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/39bbef42-image-22.jpg" src="/assets/archive/gbbcore/39bbef42-image-22.jpg" alt="" class="wp-image-1695" /></figure>
+
+
+
+<p class="wp-block-paragraph">Once you download it, just sign into the App with the <strong>EntraID </strong>connected to the Host Pool environment and you&#8217;ll see the Workspace assigned with the Desktop or published RemoteApps.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="632" data-attachment-id="1696" data-permalink="https://gbbcore.wordpress.com/2024/04/01/roll-your-own-avd-on-hci-deployment-part-4-turn-it-up/image-23-4/" data-orig-file="/assets/archive/gbbcore/6ba63e7c-image-23.jpg" data-orig-size="2344,1448" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-23" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/6ba63e7c-image-23.jpg" src="/assets/archive/gbbcore/6ba63e7c-image-23.jpg" alt="" class="wp-image-1696" /></figure>
+
+
+
+<p class="wp-block-paragraph">That&#8217;s all you have to do to start hosting the AVD workload on Azure Stack HCI! </p>
+
+
+
+<h2 class="wp-block-heading">Final Thoughts</h2>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ve reached the end of this series. We built an environment from the ground up and deployed a workload to the on-prem cluster. There is a lot more you can test and validate outside of the AVD on HCI solution with Azure Stack HCI.</p>
+
+
+
+<p class="wp-block-paragraph">Here are a few thoughts around cost optimizations with Azure Stack HCI in a Test/Dev environment. While Azure Stack HCI has an entitlement to use Azure Hybrid Use Benefit to exchanging physical cores of Windows Server Datacenter licensing with SA and for Azure Stack HCI consumption-based cores. It isn&#8217;t always efficient to use that on an environment like this. You do have a 60 day free trial from the time you register the cluster. You also have the ability to join the Preview Channel for the HCI system builds to get the latest versions. Since Preview Channel systems can&#8217;t be used in production, and these nodes aren&#8217;t production ready either give the old/obsolete nature of the gear, those two seem to pair up nicely. I won&#8217;t go into the workload licensing here as that too still needs to be entitled, but you have a few options to run this solution for a while and kick the tires. Then decomm it again or recycle it as you see fit. If you&#8217;ve collected all your work, you can even replay that on more gear later or get a jump start on a production build working with your OEM of choice. (You <strong>DO</strong> remember you can&#8217;t run this in production, right?)</p>
+
+
+
+<p class="wp-block-paragraph">I hope that you found this blog series helpful and insightful on how to stand-up Azure Stack HCI and get a service deployed. It&#8217;s several hours of work to roll your own HCI environment, but you&#8217;ll have a nice understanding of the fundamentals and a greater appreciation of all the work that went into&nbsp;the automated HCIBox virtual environment we&#8217;ve built into the portal. There are plenty of OEM solution offers to leverage once you&#8217;re ready to scale. Having a test environment like what we built will help you clear the path on all the environmental challenges to operationalize Azure Stack HCI. </p>
+
+
+
+<p class="wp-block-paragraph">Which brings us back to the beginning. If all this work doesn&#8217;t seem worthwhile, you can always leverage the other test/deployment methods available for HCI. You can and should work with an OEM to get a cluster environment with services for your initial deployment. This blog series is for when all of the other paths won&#8217;t meet your use case, budget, timeline. I want to again thank all of those who helped to put this together. Whether that was excellent existing documentation, sorely needed collaboration building my environment, or outstanding peer review of the posts. Thanks to: <strong>Michael Godfrey, Thomas Maurer, Flo Fox, </strong>and<strong> Kevin Sullivan</strong> I couldn&#8217;t have done this without them!</p>
+
+
+
+<p class="wp-block-paragraph">And thank you so much for choosing to spend your time here!</p>
+
+{% endraw %}

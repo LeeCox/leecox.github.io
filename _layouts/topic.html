@@ -1,0 +1,27 @@
+---
+layout: default
+---
+{% assign topic = site.data.topics | where: "slug", page.topic | first %}
+<div class="topic-head">
+  <h1>📁 {{ topic.name }}</h1>
+  <p class="blurb">{{ topic.blurb }}</p>
+</div>
+
+{% assign topic_posts = site.posts | where_exp: "post", "post.tags contains page.topic" %}
+{% if topic_posts.size > 0 %}
+<table class="post-table">
+  {% for post in topic_posts %}
+  <tr>
+    <td class="pt-date">{{ post.date | date: "%m/%d/%y" }}</td>
+    <td>
+      <div class="pt-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></div>
+      <div class="pt-desc">{{ post.description | default: post.excerpt | strip_html | truncate: 160 }}</div>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<div class="constructo"><span>🚧 UNDER CONSTRUCTION 🚧<br>Posts are being written. Check back soon!</span></div>
+{% endif %}
+
+<p class="post-footer"><a href="{{ '/topics/' | relative_url }}">← Back to the Directory</a></p>

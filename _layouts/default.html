@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% seo %}
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | relative_url }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏗️</text></svg>">
+  <script>(function(){try{var t=localStorage.getItem('leecox-theme');if(t==='modern')document.documentElement.setAttribute('data-theme','modern');}catch(e){}})();</script>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <span aria-hidden="true" class="tb-icon">🗔</span>
+      <span class="title"><a href="{{ '/' | relative_url }}">127.0.0.1 — {{ page.title | default: site.title }}</a></span>
+      <span class="titlebar-buttons" aria-hidden="true">
+        <span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn">✕</span>
+      </span>
+    </div>
+    <nav class="menubar">
+      <a href="{{ '/' | relative_url }}"><u>H</u>ome</a>
+      <a href="{{ '/topics/' | relative_url }}"><u>T</u>opics</a>
+      <a href="{{ '/about/' | relative_url }}"><u>A</u>bout</a>
+      <a href="{{ '/feed.xml' | relative_url }}"><u>R</u>SS</a>
+      <a href="https://github.com/{{ site.author.github }}"><u>G</u>itHub</a>
+      <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}"><u>L</u>inkedIn</a>
+      <a href="#" id="theme-toggle" class="theme-toggle" role="button" aria-pressed="false">🌙 Dark Mode</a>
+    </nav>
+    <div class="ticker" aria-hidden="true"><span>★ Welcome to leecox.pro — Notes from the Field ★ Cloud migration · AI infrastructure · home lab · garage ★ Now with 100% more agents ★ Best viewed with any browser at any resolution ★</span></div>
+
+    <main class="content">
+      {{ content }}
+    </main>
+
+    <div class="statusbar">
+      <span>© {{ 'now' | date: '%Y' }} Lee Cox</span>
+      <span>|</span>
+      <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a>
+      <span>|</span>
+      <a href="https://github.com/{{ site.author.github }}">GitHub</a>
+      <span>|</span>
+      <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
+      <span>|</span>
+      <span>Opinions are mine and mine alone. No frames were harmed.</span>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var tt = document.getElementById('theme-toggle');
+    if (!tt) return;
+    function isModern() { return document.documentElement.getAttribute('data-theme') === 'modern'; }
+    function label() {
+      tt.textContent = isModern() ? '🖥️ Retro Mode' : '🌙 Dark Mode';
+      tt.setAttribute('aria-pressed', isModern() ? 'true' : 'false');
+    }
+    tt.addEventListener('click', function (e) {
+      e.preventDefault();
+      var el = document.documentElement;
+      if (isModern()) {
+        el.removeAttribute('data-theme');
+        try { localStorage.removeItem('leecox-theme'); } catch (err) {}
+      } else {
+        el.setAttribute('data-theme', 'modern');
+        try { localStorage.setItem('leecox-theme', 'modern'); } catch (err) {}
+      }
+      label();
+    });
+    label();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+---
+title: "Roll your own AVD on HCI deployment – Part 1: The Gear"
+date: 2024-03-27T14:34:22+00:00
+categories: [gbbcore]
+tags: [work, lab]
+description: "Part 1 of a 4 Part series on how to deploy Azure Virtual Desktop on Azure Stack HCI"
+original_url: https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/
+---
+{% raw %}
+
+<p class="wp-block-paragraph">Lee Cox &#8211; Advanced Migration GBB</p>
+
+
+
+<p class="wp-block-paragraph">We often need to try things ourselves. While vendors can provide a test environment or POC gear, it can be faster to make your own setup and bang against it. Working with an OEM or Solution Provider can sometimes be slow, require a business justification that might not be immediately forthcoming or budget, especially in this day and age, that is non-existent. But you&#8217;ve got gear and your crafty. 🙂</p>
+
+
+
+<p class="wp-block-paragraph"><em>Please read this in its entirety before taking <strong>any</strong> action. My stream of consciousness writing style isn&#8217;t for the faint of heart.</em></p>
+
+
+
+<p class="wp-block-paragraph">Microsoft provides a bunch of ways to try Azure Stack HCI. The most readily available is HCIBox directly linked in the portal to get you a fully up and running environment with very minimal work. The challenge though is it runs on Azure and Azure running a big VM isn&#8217;t exactly cheap. Especially if you&#8217;re using US East/West 24/7. So, with these things in mind, I thought I’d work on a set of blog posts that will help you take gear you might already have and run a test/demo cluster to try out a bunch of interesting and exciting things Microsoft has been working on lately. Please consider this a loose guide vs a strict to-do list. Your mileage may vary, and I&#8217;ll provide a bit of my own experiences and tips along the way. I&#8217;ll try to clear the path as much as I can to make it a straightforward exercise. Yes, this is what it looks like when a Microsoft employee goes rouge-ish. There are very good reasons you shouldn&#8217;t do what I&#8217;m about to explain. Case in point:</p>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph">*** General Disclaimer***</p>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph">You know this isn&#8217;t going to be supported right? Like, you&#8217;re using old potentially out of warranty gear in the hopes to emulate a supported and new solution. Yeah, well just to make sure it&#8217;s said, <strong>You&#8217;re on your own.</strong> Don&#8217;t go complaining to the OEM or Microsoft should the server(s) burst into flames and burn down your House or Datacenter. We warned you. If you turn in a support request in the Azure portal, you will be, politely, told to pound sand.</p>
+
+
+
+<p class="wp-block-paragraph">So, you&#8217;ve got some obsolete off lease/decomm&#8217;ed gear laying around and you want to give Azure Stack HCI a try. Awesome! Maybe it&#8217;s some old Haswell or Broadwell spec gear. Maybe it&#8217;s a newer workstation, or a KabyLake Intel NUC. Most anything will do in this type of scenario. It&#8217;s <strong><em>just</em></strong> Windows after all. One thing of note though is that Azure Stack HCI 23H2 isn&#8217;t <strong>strictly</strong> Windows. Azure Stack HCI comes out of the Azure Windows development branch and as such it&#8217;s HCL<strong> IS</strong> slightly different. It&#8217;s one of the many reasons Microsoft works with our OEMs to publish <em>Validated Nodes, Integrated Systems, and Premium Solutions.</em></p>
+
+
+
+<p class="wp-block-paragraph">You can find out more about those here: <a href="https://azurestackhcisolutions.azure.microsoft.com/#/Learn">Azure Stack HCI Solutions | Microsoft</a></p>
+
+
+
+<p class="wp-block-paragraph">Review the document here for system configuration ideas: <a href="https://learn.microsoft.com/en-us/azure-stack/hci/concepts/system-requirements-23h2#server-and-storage-requirements">System requirements for Azure Stack HCI, version 23H2 &#8211; Azure Stack HCI | Microsoft Learn</a> It&#8217;s your guide to the floor from a config perspective. Bad things <strong><em>will</em></strong> happen when you go below/outside of this.</p>
+
+
+
+<p class="wp-block-paragraph">Pay particular attention to the Storage, Networking and CPU requirements. Also ensure that you have a TPM (2.0) and can use Secure Boot. You can run all of this on a single node, but the more you put on one system the slower it will run. Have a look at the HCIBox requirements for an idea of the resources needed. If it&#8217;s Single Node, you should use an all NVME/FLASH storage environment. If you do 2+ nodes, 10Gb RDMA networking is needed between the nodes for Storage Spaces Direct minimum. If you have more than one node. They all need to match from a hardware config perspective.</p>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph">Another special note: Don&#8217;t leave Fiber Channel cards in the server. It&#8217;s bad. HCI is a <em><strong>Hyper Converged Infrastructure</strong></em> solution. It doesn&#8217;t use them and doesn&#8217;t support them. One of the other ways it differs from Windows Server, no SAN disks! And since I mentioned disks, have some. OS Disk (No USB Keys/SD Cards or trying to run Azure Stack HCI on WindowsToGo), and Data Disks. Also ensure that your storage controller isn&#8217;t hiding your disks. It needs to be set to &#8220;IT&#8221; mode. Get IT?? 😀</p>
+
+
+
+<p class="wp-block-paragraph">So, if it isn&#8217;t strictly Windows what does that mean? Well, for starters you might have problems booting the ISO Image. I have colleagues who&#8217;ve tried to set this up at home and they end up with BSOD because things that worked in Azure Stack HCI 22H2 aren&#8217;t working in 23H2. A lot was done in the branch to pare down older system support including removing inbox chipset and storage drivers that have been there since the beginning of time.</p>
+
+
+
+<p class="wp-block-paragraph">What can I do about that, you say? Well, I&#8217;ll tell you how I get around these types of issues. I install Windows! At least, to begin with. The current Windows Server 2022 release is always a good base to begin with to get up and running and chasing down driver support: drive controllers, nics, OOB Controllers, etc.</p>
+
+
+
+<p class="wp-block-paragraph">Go here: <a href="https://www.microsoft.com/en-us/evalcenter/download-windows-server-2022">Windows Server 2022 | Microsoft Evaluation Center</a> get the ISO, or download the latest Non-LTSC release from MSDN, and use Rufus or another method: <a href="https://www.thomasmaurer.ch/2021/11/create-an-usb-drive-for-windows-server-2022-installation/">Create an USB Drive for Windows Server 2022 Installation &#8211; Thomas Maurer</a> to create a bootable USB drive. Install this first on the system.</p>
+
+
+
+<p class="wp-block-paragraph">I know what you&#8217;re thinking. &#8220;I&#8217;ve come here to learn how to setup Azure Stack HCI and this numskull is sending me on a wild goose chase!&#8221; Well, yes of sorts. (I prefer snipe hunts myself.) Installing the latest version of Windows does a couple of things for us.</p>
+
+
+
+<ol class="wp-block-list">
+<li>It gives us a known good OS (with a GUI!) that should work and validates the hardware is stable and able to run something &#8220;quirkier&#8221;.</li>
+
+
+
+<li>It allows us to gather and validate all the firmware and drivers we need to move the hardware to a good current config.</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">A lot of times, when dealing with decomm&#8217;ed or older hardware it may not have been current when it was powered off or at least now that you&#8217;re powering it back on. We need to check it. The best way to check it is to start clean. Get rid of Linux, ESXi, or older versions of Windows and see what needs to be remediated. An hour on the front end of this adventure will save many more troubleshooting issues trying to get things running later. If the system has an out of band system controller like an iLo, DRAC, XClarity, etc&#8230; those often keep system component and firmware information you can reference to start.</p>
+
+
+
+<p class="wp-block-paragraph">After installing Windows Server 2022 (GUI!) onto the system, boot into Windows and do the usual things. Give it a Password, set an IP that can access the Internet, and take inventory of the Device Manager driver situation on the machine. Go to the Manufacturers website under the support section, and search for relevant drivers for the last version of Windows supported on the hardware. Whether that&#8217;s WS2016, Windows 10 etc.. the newer the better. That&#8217;s a good driver baseline and a check against the age of the machine. If it doesn&#8217;t support either of those OSes, find something newer…</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="573" data-attachment-id="1646" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-1-5/" data-orig-file="/assets/archive/gbbcore/f103cee3-image-1.jpg" data-orig-size="3386,1896" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-1" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/f103cee3-image-1.jpg" src="/assets/archive/gbbcore/f103cee3-image-1.jpg" alt="" class="wp-image-1646" /></figure>
+
+
+
+<p class="wp-block-paragraph">Key Firmware, Software, and Drivers to collect:</p>
+
+
+
+<ul class="wp-block-list">
+<li>CPU and Chipset Drivers</li>
+
+
+
+<li>Storage Controller Drivers</li>
+
+
+
+<li>NIC Drivers</li>
+
+
+
+<li>Out of Band Management OS Interface Drivers</li>
+
+
+
+<li>Latest/Last versions of System Firmware</li>
+
+
+
+<li>OOB, NIC, Storage Firmware</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Be really detailed here and check for any add-in cards within the system, collect those Firmware/Drivers also. The steps here are similar to the work OEMs do for you with the base image of Azure Stack HCI you&#8217;d receive pre-installed. There is often a recipe or Firmware/Driver Bundle published for the specific system that supports Azure Stack HCI. You&#8217;re building that bundle here. </p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;ve started collecting all that, create a folder on the system and dump the firmware and drivers/software in separate sub-folders. Unpack/Extract as much as you can so that you have *.inf and *.sys files for the drivers. It will help later.</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="496" data-attachment-id="1647" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-2-6/" data-orig-file="/assets/archive/gbbcore/8092f315-image-2.jpg" data-orig-size="1959,949" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-2" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/8092f315-image-2.jpg" src="/assets/archive/gbbcore/8092f315-image-2.jpg" alt="" class="wp-image-1647" /></figure>
+
+
+
+<p class="wp-block-paragraph"><em>Sample Folder Structure and Components</em></p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="304" data-attachment-id="1648" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-3-2/" data-orig-file="/assets/archive/gbbcore/3b7578c4-image-3.jpg" data-orig-size="1933,575" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-3" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/3b7578c4-image-3.jpg" src="/assets/archive/gbbcore/3b7578c4-image-3.jpg" alt="" class="wp-image-1648" /></figure>
+
+
+
+<p class="wp-block-paragraph"><em>Sample Unpacked Drivers</em></p>
+
+
+
+<p class="wp-block-paragraph">Run through the drivers first, then the firmware to get the system up to date. Reboot and then run through Windows Updates to see if it finds newer/better versions of anything. Reboot again. Run update again… you know the drill.</p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;re to a steady state, this system should be as good as it can be. You should validate that you can turn on and use 2 things before moving on. First, the system TPM NEEDS to be 2.0, it&#8217;s called out in the Requirements above. If it&#8217;s 1.2 check and see if the TPM can be swapped out.</p>
+
+
+
+<p class="has-cyan-bluish-gray-background-color has-background wp-block-paragraph">Special Note: Some OEMs say that the TPM, which is a removable card, is now integrated into the mainboard and can&#8217;t be swapped. That isn&#8217;t strictly true. Some can be removed (sometimes easily, other times with pliers) and swapped with the 2.0 TPM option. *cough* HP Gen9 Servers *cough*</p>
+
+
+
+<p class="wp-block-paragraph">Verify the TPM can be enabled, in Windows Server Admin PowerShell run:</p>
+
+
+
+<p class="wp-block-paragraph"><code><strong>Get-TPM</strong></code></p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1650" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-4-5/" data-orig-file="/assets/archive/gbbcore/5fd1ecad-image-4.jpg" data-orig-size="581,644" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-4" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/5fd1ecad-image-4.jpg" src="/assets/archive/gbbcore/5fd1ecad-image-4.jpg" alt="" class="wp-image-1650" /></figure>
+
+
+
+<p class="wp-block-paragraph">If you see a bunch of &#8220;True&#8221; on the output. You&#8217;re good. If it&#8217;s false, the TPM isn&#8217;t correctly configured in the BIOS/UEFI.</p>
+
+
+
+<p class="wp-block-paragraph">Next verify the SecureBoot option is enabled and functional. In Windows Server Admin PowerShell run:</p>
+
+
+
+<p class="wp-block-paragraph"><code><strong>Get-SecureBootPolicy</strong></code></p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="174" data-attachment-id="1651" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-5-5/" data-orig-file="/assets/archive/gbbcore/fd50c1b7-image-5.jpg" data-orig-size="1086,185" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;1&quot;}" data-image-title="image-5" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/fd50c1b7-image-5.jpg" src="/assets/archive/gbbcore/fd50c1b7-image-5.jpg" alt="" class="wp-image-1651" /></figure>
+
+
+
+<p class="wp-block-paragraph">You should see a GUID and version number if it&#8217;s properly enabled.</p>
+
+
+
+<p class="wp-block-paragraph">Check your BIOS/UEFI for both options. You might need to reset the system to factory defaults to properly clear old configs especially if you replace components, add new ones, or swap out the TPM.</p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;ve got everything ship shape, it&#8217;s time to collect your work. Using the Windows Server 2022 USB Drive you created in the beginning, collect all the driver and firmware files from the system. Put it in a folder named something relevant to the system you&#8217;re working on. If there are multiple nodes, replay this work on all the other nodes to get them healthy and on the same firmware, and UEFI config to move on from here. Yes, install Windows, install the drivers and firmware.</p>
+
+
+
+<p class="wp-block-paragraph">The next thing to do is pull down Azure Stack HCI. At this point we need an Azure Subscription, you&#8217;ll have to have one later so, if you don&#8217;t have one. Go get one now. You can sign-up for Visual Studio Dev Essentials which comes with Free Azure Credits. Here: <a href="https://visualstudio.microsoft.com/dev-essentials/">Visual Studio Dev Essentials &#8211; Visual Studio (microsoft.com)</a></p>
+
+
+
+<p class="wp-block-paragraph">Once you have your account. Go to: <a href="https://portal.azure.com/#home">Home &#8211; Microsoft Azure</a> and sign in.</p>
+
+
+
+<p class="wp-block-paragraph">Once on the landing page, in Search type: Azure Stack HCI</p>
+
+
+
+<figure class="wp-block-image size-large"><img loading="lazy" width="1024" height="525" data-attachment-id="1652" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-6-5/" data-orig-file="/assets/archive/gbbcore/3eadf176-image-6.jpg" data-orig-size="1086,557" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-6" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/3eadf176-image-6.jpg" src="/assets/archive/gbbcore/3eadf176-image-6.jpg" alt="" class="wp-image-1652" /></figure>
+
+
+
+<p class="wp-block-paragraph">Select Azure Stack HCI to go to that landing page.</p>
+
+
+
+<figure class="wp-block-image size-full"><img data-attachment-id="1653" data-permalink="https://gbbcore.wordpress.com/2024/03/27/roll-your-own-avd-on-hci-deployment-part-1-the-gear/image-7-4/" data-orig-file="/assets/archive/gbbcore/d5fc8baf-image-7.jpg" data-orig-size="999,444" data-comments-opened="1" data-image-meta="{&quot;aperture&quot;:&quot;0&quot;,&quot;credit&quot;:&quot;&quot;,&quot;camera&quot;:&quot;&quot;,&quot;caption&quot;:&quot;&quot;,&quot;created_timestamp&quot;:&quot;0&quot;,&quot;copyright&quot;:&quot;&quot;,&quot;focal_length&quot;:&quot;0&quot;,&quot;iso&quot;:&quot;0&quot;,&quot;shutter_speed&quot;:&quot;0&quot;,&quot;title&quot;:&quot;&quot;,&quot;orientation&quot;:&quot;0&quot;}" data-image-title="image-7" data-image-description="" data-image-caption="" data-large-file="/assets/archive/gbbcore/d5fc8baf-image-7.jpg" src="/assets/archive/gbbcore/d5fc8baf-image-7.jpg" alt="" class="wp-image-1653" /></figure>
+
+
+
+<p class="wp-block-paragraph">On that page go to &#8220;Step 2&#8221; and click to download the latest ISO.</p>
+
+
+
+<p class="wp-block-paragraph">Once you&#8217;ve pulled down the ISO, now we&#8217;re going to build a new Azure Stack HCI USB install key. This can be the same as the Windows Server USB Key we started with, but we need to get the Driver/Firmware folder off the drive <strong><em>FIRST!</em></strong></p>
+
+
+
+<p class="wp-block-paragraph">One way to smooth out the install process and make the drivers self-loaded, is to Slipstream the Azure Stack HCI ISO with the driver packages you&#8217;ve collected. To do this, Thomas Maurer has a great guide to help add those drivers programmatically. Go here: <a href="https://www.thomasmaurer.ch/2019/07/add-drivers-to-a-windows-server-2019-iso-image/">Add Drivers to a Windows Server 2019 ISO Image &#8211; Thomas Maurer</a></p>
+
+
+
+<p class="wp-block-paragraph">Build out the directory structure he outlines and mount the HCI Image on your machine. You&#8217;ll substitute Windows Server 2019 with Azure Stack HCI 23H2, but still add the drivers to BOTH the <strong><em>Install.wim</em></strong> and <strong><em>Boot.wim</em></strong> before continuing. Once you have the drivers integrated, copy the contents of the ISO folder over to the USB Key. Then also copy over the Driver/Software/Firmware folder onto the USB Key. You shouldn&#8217;t need it, but if there is software or drivers that aren&#8217;t unpacked or don&#8217;t slipstream you can quickly add those to get things done. As an example, the HPE iLo CHIF driver doesn&#8217;t integrate well. Nor does the config tools for the storage controller and iLo.</p>
+
+
+
+<p class="wp-block-paragraph">The main reason to slipstream is to add hardware specific boot drivers that might be missing in the base image especially those required during install and device detection.</p>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ll stop here as next step is the Planning and Identity Prep pieces. I want to take a minute and thank <strong><em>Thomas Maurer</em></strong> for the documentation links. His site is invaluable. Thanks for reading!</p>
+
+{% endraw %}

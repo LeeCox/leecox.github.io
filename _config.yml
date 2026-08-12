@@ -1,0 +1,47 @@
+title: Lee Cox
+tagline: Notes from the Field
+description: >-
+  Notes from the Field: cloud migration, AI infrastructure, the home lab,
+  and the garage (with the occasional dragon). Musings from enterprise
+  architect Lee Cox.
+url: "https://leecox.pro"
+baseurl: ""
+
+author:
+  name: Lee Cox
+  linkedin: leecoxtn
+  github: LeeCox
+
+permalink: /:categories/:title/
+timezone: America/Chicago
+
+markdown: kramdown
+kramdown:
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+feed:
+  posts_limit: 20
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      image: /assets/img/og-default.png
+  - scope:
+      path: ""
+      type: pages
+    values:
+      image: /assets/img/og-default.png
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - README.md
