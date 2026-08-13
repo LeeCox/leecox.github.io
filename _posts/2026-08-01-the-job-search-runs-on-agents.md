@@ -6,19 +6,18 @@ tags: [work, research]
 description: "How I built an agentic harness around my job search (the resume pipeline, the fact-checked record, the voice profile) so the human hours go to networking, interview prep, and figuring out what comes next."
 ---
 
-Microsoft cut our entire Infrastructure GBB organization in early July.
-Within a week, every
-well-meaning person in my life had told me the
+Microsoft cut their Infrastructure GBB organization in early July.
+Within a week, every well-meaning person in my life had told me the
 same thing: "job searching is a full-time job." Yeah, they're right, but
 nobody ever asks WHICH parts of that job actually deserve full-time
 attention. Most of a modern job search is mechanical: tailoring documents,
-formatting, tracking, drafting yet another polite follow-up. Mechanical
-work is what I have agents for. So the first thing I built after the
+formatting, tracking, drafting a long stream of communication. Mechanical
+work is what I have agents for, so the first thing I built after the
 layoff wasn't a spreadsheet of openings. It was a harness.
 
 Same deal as [the home lab](/workbench/agentic-management-of-a-personal-home-lab/):
 this post is the setup (the harness, the agents, the process, and what
-it's produced) and then the actual point, which is what all of it buys.
+it's produced) and then the actual meaningful goal of the effort.
 
 ## The harness
 
@@ -28,8 +27,8 @@ correspondence, imported conversations, and a build pipeline. The agent
 works inside it with full context; nothing lives in my head or a random
 Downloads folder.
 
-**Resume-as-code.** There's one archetype resume (the maintained,
-canonical account of the career) and it never ships. What ships is a
+**Resume-as-code.** There's one to three archetype resumes (the maintained,
+canonical account of the career) and it's never shared. What goes out is a
 build: a Node pipeline using the `docx` library that produces a tailored
 Word document and PDF per application. Formatting bugs got fixed once, in
 code! When a posting demands a different emphasis, the delta is a
@@ -37,24 +36,24 @@ tailoring pass, not an hour of fighting Word's list indentation at
 midnight.
 
 **A fact base with usage rules.** Underneath everything sits a performance
-record (every deal, metric, and win from the career, compiled once and
-kept internal) with hard rules the agents must draft against: numbers
-come only from the record, opportunities are never written as bookings,
-losses are stated as pursuits, customer names stay generalized unless
-there's a release. In other words: the resume can't inflate, because the
-data layer refuses. I'd love to claim this was a character decision, but
-honestly it's just good engineering (the same reason you validate at the
-schema and not in the UI).
+record I've gathered over my career (every deal, metric, and win from the 
+career, compiled once and kept internal) with hard rules the agents must 
+draft against: numbers come only from the record, opportunities are never 
+written as bookings, losses are stated as pursuits, customer names stay 
+generalized unless there's a release. In other words: the resume can't 
+inflate, because the data layer refuses. I'd love to claim this was a 
+character decision, but honestly it's just good engineering (the same 
+reason you validate at the schema and not in the UI).
 
 **A voice profile.** The strangest and most valuable piece. The agents
 draft correspondence in MY voice, trained not on vibes but on my actual
-sent mail, and refined the way you'd tune any model: by diffing what the
-agent drafted against what I actually sent, and folding every correction
-back into the profile. It has learned things about my writing I hadn't
-noticed myself: that I thank people for specific things rather than in
-general, that I'd rather hand someone a menu of options than an
-open-ended ask. The drafts land close enough now that my edit pass is
-minutes!
+sent mail, pre-AI documents, IMs, Chats, and posts which are refined the 
+way you'd tune any model: by diffing what the agent drafted against what 
+I actually sent, and folding every correction back into the profile. It 
+has learned things about my writing I hadn't noticed myself: that I thank 
+people for specific things rather than in general, that I'd rather hand 
+someone a menu of options than an open-ended ask. The drafts are getting 
+close enough now that my edit pass is minutes!
 
 ## The process
 
@@ -70,7 +69,10 @@ The loop per application is boring, which (like the lab) is the point:
    send everything myself.** The agent has no send button, and it never
    will. The harness stops at the edge of every relationship.
 4. **Track:** state lives in the repo. "Where are we with X?" is a
-   question the directory can answer.
+   question the directory can answer. This is where Excel comes in, every
+   opportunity turns into a row that has a Link to the live req, contact
+   infromation for a sponsor, notes on activity, the scoring of the role
+   (more next), everything you might need to make an informed decision. 
 
 ## The Self-JD: scoring the search in both directions
 
@@ -80,7 +82,9 @@ description for the role I would post for myself.** Scope, altitude,
 domain, the customer-facing/engineering mix, location and travel shape,
 and the markers of the places I've done my best work. It forces the
 "what do I actually want" conversation out of your head and into a
-document that can be argued with.
+document that can be tuned. You can tune it by finding something you 
+like and feel is a fit but the JD says isn't. Or by going through some 
+self-assessments to calibrate the process feeding those back in. 
 
 Then it becomes a scoring system, and the weighting is where most people
 (me included, first pass) get it wrong. The temptation is to weight the
@@ -101,17 +105,16 @@ Every posting that comes in gets scored two directions:
   rule that makes it worth doing: **every claim needs a receipt from the
   record.** "I can do this" doesn't score; "I did this, here, with this
   outcome" scores. The same discipline as everything else in the
-  harness, and it cuts both ways. It catches the
-  impostor reflex that undersells real evidence, and it catches the
-  stretch fantasy where I talk myself into a fit that's really three
-  gaps in a trench coat. What's left is an honest gap list, which is
-  exactly the interview-prep syllabus and the cover letter's talking
-  points.
+  harness, which helps two ways. It catches the impostor reflex that
+  undersells real evidence, and it catches the stretch fantasy where
+  I talk myself into a fit that's really three gaps in a trench coat.
+  What's left is an honest gap list, which is exactly the interview-prep
+  syllabus and the cover letter's talking points.
 
 And it's a living system: **refinement and rescoring.** After every
 conversation and every loop, what I learned goes back in: a weight was
 wrong, a requirement on paper turned out not to matter in the room, a
-"dream fit" revealed a travel load the posting never mentioned. The
+"dream fit" revealed a travel load the posting conveniently left out. The
 agents rerun the scoring across the whole pipeline, and the ranking
 reshuffles without sentiment. Sunk cost doesn't get a vote; the
 month-old conversation gets rescored like it walked in today.
@@ -121,39 +124,40 @@ month-old conversation gets rescored like it walked in today.
 So, the honest scorecard, a month in: the mechanical layer of an application
 (the part that used to eat an evening per posting) now takes minutes of my
 attention. The documents going out are fact-checked to a standard no tired
-human at 11 PM holds himself to: nothing ships that the record can't back.
+human at 11 PM holds himself to: nothing goes out that the record can't back.
 And the pipeline is doing what a pipeline should: a bunch of active
 conversations running, interview loops in motion. No outcomes to announce
-yet; when there's one, this thread will hear about it.
+yet; when there's one, I'll certainly let you know!
 
 ## The actual point
 
 Here's the thing the harness is really for, and it isn't efficiency for
 its own sake. Everything above exists to protect the hours that matter,
-because the parts of a job search that produce a job were never the
-documents:
+because the parts of a job search that can produce a job were never in
+documents management:
 
 **Networking.** Every conversation that has moved my search forward has
 come through an actual person rather than a portal. The harness means
 that when someone offers me twenty minutes, my prep is done and my
 follow-up is thoughtful and same-day; the machine handles the ceremony
-so I can show up prepared and actually present.
+so I can show up prepared and actually present, which is a huge win.
 
 **Interview prep.** Loops at the principal level are won in the room.
 The reclaimed evenings go to the actual work: systems thinking, stories
-with numbers I can defend, whiteboards.
+with numbers I can defend, scavenging back in my career to recreate what 
+I've long since forgotten, hitting the whiteboard HARD.
 
 **Self-reflection.** The least automatable task on the list: figuring out
-what the next decade should actually be, rather than sprinting into the
+what the a next decade could actually be, rather than sprinting into the
 first thing that looks like the last thing. The Self-JD is where that
 thinking gets written down, but the thinking itself happens on long
-walks, away from any terminal. A layoff hands you a rare, unwelcome "gift"
-(a forced pause with real stakes), and it would be a waste to spend it
-fighting Word.
+walks or drives, away from any terminal. A layoff hands you a rare, 
+unwelcome "gift" (a forced pause with real stakes), and it would be a 
+waste to spend it fighting Word and Excel.
 
 So that's the design: the agents handle the search's mechanics, and
 the human parts stay human. If you're in the same boat (and this
-industry has put a lot of good people in this boat lately), build the
-harness once, and then go spend yourself where it counts.
+industry has put a lot of incredible people in this boat lately), 
+build the harness once, and then go spend yourself where it counts.
 
 Thanks for reading!
