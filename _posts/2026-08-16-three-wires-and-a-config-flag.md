@@ -17,9 +17,9 @@ supports.
 The Matrix headlight is the one people ask me about most, and it's the
 one I'd do first. The light output isn't close.
 
-*(Disclaimer: I make the aftermarket adapters for this, so read
-accordingly. The engineering is the same whether you buy mine or build
-your own.)*
+*(Disclaimer: I used to make the aftermarket adapters for this. I don't
+anymore, so there's nothing here for me to sell you. The engineering is
+the same either way.)*
 
 ## What changed in Feb 22
 

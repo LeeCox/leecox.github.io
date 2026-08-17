@@ -6,6 +6,9 @@ tags: [garage]
 description: "How making one adapter harness for my own headlight retrofit turned into a tiny parts operation, and what running it taught me about QA, group buys, and standing behind your work."
 ---
 
+*Update: I've since stopped making these. This one is a snapshot of
+that run while it was going.*
+
 Nobody sets out to become a parts supplier from their garage. It happens
 one step at a time. You do a retrofit on your own car, you solve a
 connector problem the factory never intended you to solve, someone on
