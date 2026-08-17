@@ -34,6 +34,80 @@ the blinker across the LIN bus when they made the switch, so the analog
 blinker circuit goes away on these cars. Everything the light does now
 arrives as a command over LIN.
 
+On the 2021 car the headlight connector is X261 on the left and X262 on
+the right, and only four cavities are populated: pin 1 LIN, pin 4 the
+blue turn signal, pin 6 Power, pin 9 Ground. Pull SOP14 for the 2021
+schematic and SOP15 for the 2022 one and you can see the whole change
+in a single page. Pin 4 is labeled TURN_SIGNAL_SYNC, and it's the one
+that has nowhere to go on a Matrix light.
+
+<figure class="schematic">
+<svg viewBox="0 0 680 300" role="img" aria-label="Model S adapter wiring: 2021 fourteen-pin connector X261 pin 1 LIN, pin 4 blue turn signal dropped, pin 6 power, pin 9 ground, crossing over to the three-pin Matrix light connector pin 1 power, pin 2 LIN, pin 3 ground" style="width:100%;height:auto">
+<g fill="none" stroke="currentColor" stroke-width="2">
+<rect x="40" y="40" width="120" height="220" rx="6"/>
+<rect x="520" y="70" width="120" height="160" rx="6"/>
+</g>
+<g fill="currentColor" font-family="Verdana,Geneva,sans-serif" font-size="12" text-anchor="middle">
+<text x="100" y="28" font-weight="bold">2021 harness</text>
+<text x="100" y="284">X261 / X262</text>
+<text x="580" y="58" font-weight="bold">Matrix light</text>
+<text x="580" y="254">3 pin</text>
+</g>
+<g stroke-width="3" fill="none">
+<path d="M160 90 C 300 90, 380 170, 520 170" stroke="#3a9d5d"/>
+<path d="M160 140 L 268 140" stroke="#5b8dd9" stroke-dasharray="7 5"/>
+<path d="M160 190 C 300 190, 380 110, 520 110" stroke="#d64545"/>
+<path d="M160 240 C 300 240, 380 210, 520 210" stroke="currentColor"/>
+</g>
+<g stroke="#5b8dd9" stroke-width="3">
+<path d="M279 132 L 295 148"/><path d="M295 132 L 279 148"/>
+</g>
+<g fill="currentColor" font-family="Verdana,Geneva,sans-serif" font-size="12">
+<text x="168" y="86">1 LIN</text>
+<text x="168" y="136">4 turn</text>
+<text x="168" y="186">6 Power</text>
+<text x="168" y="236">9 Ground</text>
+<text x="512" y="106" text-anchor="end">Power 1</text>
+<text x="512" y="166" text-anchor="end">LIN 2</text>
+<text x="512" y="206" text-anchor="end">Ground 3</text>
+<text x="306" y="144" font-size="11">dropped</text>
+</g>
+</svg>
+<figcaption><em>Model S. Three circuits move position, and the blue turn signal on pin 4 stops here.</em></figcaption>
+</figure>
+
+The Model X is the easy one. Same light-side connector, and the wires
+run straight through without changing position, so it's a housing swap
+and nothing else.
+
+<figure class="schematic">
+<svg viewBox="0 0 680 220" role="img" aria-label="Model X adapter wiring: power, LIN and ground pass straight through from the car connector to the three-pin Matrix light connector with no change of pin position" style="width:100%;height:auto">
+<g fill="none" stroke="currentColor" stroke-width="2">
+<rect x="40" y="40" width="120" height="140" rx="6"/>
+<rect x="520" y="40" width="120" height="140" rx="6"/>
+</g>
+<g fill="currentColor" font-family="Verdana,Geneva,sans-serif" font-size="12" text-anchor="middle">
+<text x="100" y="28" font-weight="bold">Model X harness</text>
+<text x="580" y="28" font-weight="bold">Matrix light</text>
+<text x="340" y="204" font-size="11">no position change</text>
+</g>
+<g stroke-width="3" fill="none">
+<path d="M160 75 L 520 75" stroke="#d64545"/>
+<path d="M160 115 L 520 115" stroke="#3a9d5d"/>
+<path d="M160 155 L 520 155" stroke="currentColor"/>
+</g>
+<g fill="currentColor" font-family="Verdana,Geneva,sans-serif" font-size="12">
+<text x="168" y="71">1 Power</text>
+<text x="168" y="111">2 LIN</text>
+<text x="168" y="151">3 Ground</text>
+<text x="512" y="71" text-anchor="end">Power 1</text>
+<text x="512" y="111" text-anchor="end">LIN 2</text>
+<text x="512" y="151" text-anchor="end">Ground 3</text>
+</g>
+</svg>
+<figcaption><em>Model X. Different housings on each end, straight through in between.</em></figcaption>
+</figure>
+
 ![A matched pair of Matrix headlight adapters, three-pin end and car-side end](/assets/img/matrix-adapters/adapters.jpg)
 *Small end to the light, big end to the car.*
 
